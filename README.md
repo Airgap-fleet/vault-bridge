@@ -1,6 +1,6 @@
-# Obsidian MCP Server
+# Vault Bridge
 
-FastMCP server for Obsidian vault operations — read, write, search, and manage notes via Model Context Protocol.
+Bridge your AI assistant to local knowledge vaults — read, write, search, and manage notes without cloud dependencies.
 
 ## Features
 
@@ -14,13 +14,13 @@ FastMCP server for Obsidian vault operations — read, write, search, and manage
 ## Installation
 
 ```bash
-pip install -e .
+pip install vault-bridge
 ```
 
 ## Usage
 
 ```bash
-obsidian-mcp
+vault-bridge
 ```
 
 Or configure in your MCP client:
@@ -28,10 +28,10 @@ Or configure in your MCP client:
 ```json
 {
   "mcpServers": {
-    "obsidian": {
-      "command": "obsidian-mcp",
+    "vault": {
+      "command": "vault-bridge",
       "env": {
-        "OBSIDIAN_MCP_VAULT_PATH": "C:/path/to/vault"
+        "VAULT_BRIDGE_VAULT_PATH": "C:/path/to/vault"
       }
     }
   }
@@ -42,11 +42,11 @@ Or configure in your MCP client:
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
-| `OBSIDIAN_MCP_VAULT_PATH` | Current directory | Path to Obsidian vault root |
-| `OBSIDIAN_MCP_MAX_FILE_SIZE` | 10MB | Max file size for operations |
-| `OBSIDIAN_MCP_DEFAULT_ENCODING` | utf-8 | Text encoding |
-| `OBSIDIAN_MCP_INDEX_FRONTMATTER` | true | Parse YAML frontmatter |
-| `OBSIDIAN_MCP_FOLLOW_SYMLINKS` | false | Follow symlinks |
+| `VAULT_BRIDGE_VAULT_PATH` | Current directory | Path to vault root |
+| `VAULT_BRIDGE_MAX_FILE_SIZE` | 10MB | Max file size for operations |
+| `VAULT_BRIDGE_DEFAULT_ENCODING` | utf-8 | Text encoding |
+| `VAULT_BRIDGE_INDEX_FRONTMATTER` | true | Parse YAML frontmatter |
+| `VAULT_BRIDGE_FOLLOW_SYMLINKS` | false | Follow symlinks |
 
 ## Tool Reference
 

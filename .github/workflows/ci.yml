@@ -37,7 +37,7 @@ jobs:
         with:
           files: ./coverage.xml
           flags: unittests
-          name: obsidian-mcp-coverage
+          name: vault-bridge-coverage
 
   lint:
     runs-on: ubuntu-latest
@@ -88,7 +88,7 @@ jobs:
       - name: Verify package
         run: |
           pip install dist/*.whl
-          obsidian-mcp --help
+          vault-bridge --help
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

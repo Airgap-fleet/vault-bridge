@@ -1,4 +1,4 @@
-"""Obsidian MCP Server - FastMCP server for Obsidian vault operations.
+"""Vault Bridge — Bridge your AI assistant to local knowledge vaults.
 Stateless protocol (2026-07-28): no global session state, explicit config per request.
 """
 
@@ -60,7 +60,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         logger.info("auth.enabled", transport=config.transport)
     
     mcp = FastMCP(
-        "Obsidian Vault",
+        "Vault Bridge",
         auth=auth,
     )
     
@@ -125,8 +125,8 @@ def create_mcp_server(config: ObsidianConfig | None = None):
             return ErrorResponse(error=type(e).__name__, message=str(e))
 
     def run():
-        """Entry point for the obsidian-mcp CLI."""
-        logger.info("server.starting", name="Obsidian Vault", transport=config.transport, host=config.host, port=config.port, path=config.path)
+        """Entry point for the vault-bridge CLI."""
+        logger.info("server.starting", name="Vault Bridge", transport=config.transport, host=config.host, port=config.port, path=config.path)
         
         if config.transport == "stdio":
             mcp.run()
@@ -142,7 +142,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
 
 
 def main():
-    """Entry point for the obsidian-mcp CLI."""
+    """Entry point for the vault-bridge CLI."""
     mcp, run = create_mcp_server()
     run()
 

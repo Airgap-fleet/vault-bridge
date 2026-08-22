@@ -1,4 +1,4 @@
-# AFaaS Obsidian MCP — Dockerfile
+# AFaaS Vault Bridge — Dockerfile
 
 FROM python:3.11-slim-bookworm AS builder
 
@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install package
-COPY dist/obsidian_mcp-1.0.0-py3-none-any.whl .
-RUN pip install --no-cache-dir obsidian_mcp-1.0.0-py3-none-any.whl
+COPY dist/vault_bridge-1.0.0-py3-none-any.whl .
+RUN pip install --no-cache-dir vault_bridge-1.0.0-py3-none-any.whl
 
 # Runtime stage
 FROM python:3.11-slim-bookworm
@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy installed package from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin/obsidian-mcp /usr/local/bin/obsidian-mcp
+COPY --from=builder /usr/local/bin/vault-bridge /usr/local/bin/vault-bridge
 
 # Create vault directory with correct permissions
 RUN mkdir -p /vault && chown mcp:mcp /vault
@@ -37,11 +37,11 @@ RUN mkdir -p /vault && chown mcp:mcp /vault
 USER mcp
 
 # Environment defaults
-ENV OBSIDIAN_MCP_VAULT_PATH=/vault
-ENV OBSIDIAN_MCP_TRANSPORT=stdio
-ENV OBSIDIAN_MCP_LOG_LEVEL=INFO
-ENV OBSIDIAN_MCP_MAX_FILE_SIZE=10485760
-ENV OBSIDIAN_MCP_FOLLOW_SYMLINKS=false
+ENV VAULT_BRIDGE_VAULT_PATH=/vault
+ENV VAULT_BRIDGE_TRANSPORT=stdio
+ENV VAULT_BRIDGE_LOG_LEVEL=INFO
+ENV VAULT_BRIDGE_MAX_FILE_SIZE=10485760
+ENV VAULT_BRIDGE_FOLLOW_SYMLINKS=false
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
@@ -54,4 +54,4 @@ EXPOSE 8000
 VOLUME ["/vault"]
 
 # Entry point
-ENTRYPOINT ["obsidian-mcp"]
+ENTRYPOINT ["vault-bridge"]
