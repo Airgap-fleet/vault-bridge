@@ -1,0 +1,121 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.afaas/obsidian-mcp",
+  "description": "Local-first Obsidian vault operations for AI agents — read, write, search, and manage notes with full frontmatter support. Air-gapped, regulated-industry ready, runs on your hardware.",
+  "repository": {
+    "url": "https://github.com/afaas/obsidian-mcp.git",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/afaas/obsidian-mcp/main/dxt/icon.png",
+      "mimeType": "image/png",
+      "sizes": ["256x256"]
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "obsidian-mcp",
+      "version": "1.0.0",
+      "runtimeHint": "python",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Path to the Obsidian vault directory",
+          "isRequired": true,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_VAULT_PATH"
+        },
+        {
+          "description": "Transport type: stdio, sse, or streamable-http",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_TRANSPORT",
+          "default": "stdio"
+        },
+        {
+          "description": "API key for SSE/HTTP transport authentication",
+          "isRequired": false,
+          "isSecret": true,
+          "name": "OBSIDIAN_MCP_API_KEY"
+        },
+        {
+          "description": "Host for SSE/HTTP transport",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_HOST",
+          "default": "127.0.0.1"
+        },
+        {
+          "description": "Port for SSE/HTTP transport",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_PORT",
+          "default": "8000"
+        },
+        {
+          "description": "Log level: DEBUG, INFO, WARNING, ERROR",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_LOG_LEVEL",
+          "default": "INFO"
+        }
+      ]
+    },
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/afaas/obsidian-mcp:1.0.0",
+      "runtimeHint": "docker",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Path to the Obsidian vault directory (mount as /vault)",
+          "isRequired": true,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_VAULT_PATH",
+          "default": "/vault"
+        },
+        {
+          "description": "Transport type: stdio, sse, or streamable-http",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_TRANSPORT",
+          "default": "stdio"
+        },
+        {
+          "description": "API key for SSE/HTTP transport authentication",
+          "isRequired": false,
+          "isSecret": true,
+          "name": "OBSIDIAN_MCP_API_KEY"
+        },
+        {
+          "description": "Host for SSE/HTTP transport",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_HOST",
+          "default": "0.0.0.0"
+        },
+        {
+          "description": "Port for SSE/HTTP transport",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_PORT",
+          "default": "8000"
+        },
+        {
+          "description": "Log level: DEBUG, INFO, WARNING, ERROR",
+          "isRequired": false,
+          "isSecret": false,
+          "name": "OBSIDIAN_MCP_LOG_LEVEL",
+          "default": "INFO"
+        }
+      ]
+    }
+  ]
+}

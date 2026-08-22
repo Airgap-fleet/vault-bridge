@@ -1,7 +1,8 @@
-"""Obsidian MCP Server - FastMCP server for Obsidian vault operations."""
+"""Obsidian MCP Server - FastMCP server for Obsidian vault operations.
+Stateless protocol (2026-07-28): no global session state, explicit config per request.
+"""
 
 import sys
-from contextlib import asynccontextmanager
 from fastmcp import FastMCP
 from fastmcp.server.auth import TokenVerifier, AccessToken
 
@@ -35,8 +36,13 @@ class APIKeyVerifier(TokenVerifier):
     
     async def verify_token(self, token: str) -> AccessToken | None:
         if token == self.api_key:
-            return AccessToken(token=token, scopes=["mcp"])
+            return AccessToken(token=token, client_id="mcp-client", scopes=["mcp"])
         return None
+
+
+def create_core(config: ObsidianConfig) -> ObsidianCore:
+    """Create a fresh ObsidianCore instance (stateless - no global state)."""
+    return ObsidianCore(config)
 
 
 def create_mcp_server(config: ObsidianConfig | None = None):
@@ -58,13 +64,11 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         auth=auth,
     )
     
-    # Initialize core with config
-    core = ObsidianCore(config)
-
     @mcp.tool()
     def read_note(request: ReadNoteRequest) -> ReadNoteResponse | ErrorResponse:
         """Read a note from the Obsidian vault."""
         try:
+            core = create_core(config)
             return core.read_note(request)
         except Exception as e:
             logger.error("read_note.error", path=request.path, error=type(e).__name__, message=str(e))
@@ -74,6 +78,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
     def write_note(request: WriteNoteRequest) -> WriteNoteResponse | ErrorResponse:
         """Write a note to the Obsidian vault."""
         try:
+            core = create_core(config)
             return core.write_note(request)
         except Exception as e:
             logger.error("write_note.error", path=request.path, error=type(e).__name__, message=str(e))
@@ -83,6 +88,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
     def list_notes(request: ListNotesRequest) -> ListNotesResponse | ErrorResponse:
         """List notes in the Obsidian vault."""
         try:
+            core = create_core(config)
             return core.list_notes(request)
         except Exception as e:
             logger.error("list_notes.error", path=request.path, error=type(e).__name__, message=str(e))
@@ -92,6 +98,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
     def search_notes(request: SearchNotesRequest) -> SearchNotesResponse | ErrorResponse:
         """Search notes in the Obsidian vault using regex."""
         try:
+            core = create_core(config)
             return core.search_notes(request)
         except Exception as e:
             logger.error("search_notes.error", pattern=request.pattern, path=request.path, error=type(e).__name__, message=str(e))
@@ -101,6 +108,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
     def search_frontmatter(request: SearchFrontmatterRequest) -> SearchFrontmatterResponse | ErrorResponse:
         """Search notes by frontmatter key/value."""
         try:
+            core = create_core(config)
             return core.search_frontmatter(request)
         except Exception as e:
             logger.error("search_frontmatter.error", key=request.key, operator=request.operator, path=request.path, error=type(e).__name__, message=str(e))
@@ -110,6 +118,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
     def get_daily_note(request: DailyNoteRequest) -> DailyNoteResponse | ErrorResponse:
         """Get or create a daily note."""
         try:
+            core = create_core(config)
             return core.get_daily_note(request)
         except Exception as e:
             logger.error("get_daily_note.error", date=request.date, folder=request.folder, error=type(e).__name__, message=str(e))
@@ -122,9 +131,9 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         if config.transport == "stdio":
             mcp.run()
         elif config.transport == "sse":
-            mcp.run_sse()
+            mcp.run_http_async()
         elif config.transport == "streamable-http":
-            mcp.run_streamable_http()
+            mcp.run_http_async()
         else:
             logger.error("server.invalid_transport", transport=config.transport)
             raise ValueError(f"Unknown transport: {config.transport}")

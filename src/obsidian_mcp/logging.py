@@ -10,10 +10,16 @@ def configure_logging(level: str = "INFO", json_output: bool = True) -> None:
     
     # Configure stdlib logging
     import logging
+    # Remove existing handlers to allow reconfiguration (important for tests)
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+    
     logging.basicConfig(
         format="%(message)s",
         stream=sys.stdout,
         level=getattr(logging, level.upper()),
+        force=True,  # Python 3.8+: force reconfiguration
     )
     
     # Configure structlog processors
