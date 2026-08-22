@@ -45,7 +45,7 @@ def create_core(config: ObsidianConfig) -> ObsidianCore:
     return ObsidianCore(config)
 
 
-def create_mcp_server(config: ObsidianConfig | None = None):
+def create_mcp_server(config: ObsidianConfig | None = None) -> tuple:
     """Create and configure the FastMCP server."""
     config = config or ObsidianConfig()
     
@@ -142,14 +142,15 @@ def create_mcp_server(config: ObsidianConfig | None = None):
             logger.exception("get_daily_note.unexpected", date=request.date)
             return ErrorResponse(error="InternalError", message="Unexpected error getting daily note")
 
-    def run():
+    def run() -> None:
         """Entry point for the vault-bridge CLI."""
         logger.info("server.starting", name="Vault Bridge", transport=config.transport, host=config.host, port=config.port, path=config.path)
         
         if config.transport == "stdio":
             mcp.run()
         elif config.transport == "sse" or config.transport == "streamable-http":
-            mcp.run_http_async()
+            import asyncio
+            asyncio.run(mcp.run_http_async())
         else:
             logger.error("server.invalid_transport", transport=config.transport)
             raise ValueError(f"Unknown transport: {config.transport}")

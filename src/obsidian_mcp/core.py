@@ -236,7 +236,7 @@ class ObsidianCore:
             raise FileNotFoundError(f"Directory not found: {request.path}")
 
         glob_pat = request.glob_pattern or "**/*.md"
-        matches = []
+        matches: list[FrontmatterMatch] = []
 
         def compare(op: str, a: Any, b: Any) -> bool:
             if op == "eq":
