@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.pytest_cache/
+.coverage
+coverage.xml
+*.cover
+*.pyc
+*.pyo
+
+# Build / Dist
+dist/
+build/
+*.egg-info/
+*.whl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test vault (local only)
+test-vault/
+
+# DXT build artifacts
+dxt/
+*.dxt
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Type checking
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Ruff
+.ruff_cache/
+
+# Coverage
+htmlcov/

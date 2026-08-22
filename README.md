@@ -1,0 +1,104 @@
+# Obsidian MCP Server
+
+FastMCP server for Obsidian vault operations — read, write, search, and manage notes via Model Context Protocol.
+
+## Features
+
+- **read_note** — Read a note with optional frontmatter parsing
+- **write_note** — Write notes with YAML frontmatter support
+- **list_notes** — List notes with glob filtering and recursion
+- **search_notes** — Regex search across vault content
+- **search_frontmatter** — Query notes by frontmatter key/value
+- **get_daily_note** — Get or create daily notes with templates
+
+## Installation
+
+```bash
+pip install -e .
+```
+
+## Usage
+
+```bash
+obsidian-mcp
+```
+
+Or configure in your MCP client:
+
+```json
+{
+  "mcpServers": {
+    "obsidian": {
+      "command": "obsidian-mcp",
+      "env": {
+        "OBSIDIAN_MCP_VAULT_PATH": "C:/path/to/vault"
+      }
+    }
+  }
+}
+```
+
+## Configuration
+
+| Environment Variable | Default | Description |
+|---------------------|---------|-------------|
+| `OBSIDIAN_MCP_VAULT_PATH` | Current directory | Path to Obsidian vault root |
+| `OBSIDIAN_MCP_MAX_FILE_SIZE` | 10MB | Max file size for operations |
+| `OBSIDIAN_MCP_DEFAULT_ENCODING` | utf-8 | Text encoding |
+| `OBSIDIAN_MCP_INDEX_FRONTMATTER` | true | Parse YAML frontmatter |
+| `OBSIDIAN_MCP_FOLLOW_SYMLINKS` | false | Follow symlinks |
+
+## Tool Reference
+
+### read_note
+```json
+{
+  "path": "Projects/roadmap.md",
+  "include_frontmatter": true
+}
+```
+
+### write_note
+```json
+{
+  "path": "Projects/new-idea.md",
+  "content": "# New Idea\n\nDetails here...",
+  "frontmatter": { "tags": ["idea", "draft"], "status": "wip" }
+}
+```
+
+### list_notes
+```json
+{
+  "path": "Projects",
+  "glob_pattern": "**/*.md",
+  "recursive": true
+}
+```
+
+### search_notes
+```json
+{
+  "pattern": "MCP",
+  "path": ".",
+  "max_results": 50
+}
+```
+
+### search_frontmatter
+```json
+{
+  "key": "status",
+  "value": "done",
+  "operator": "eq"
+}
+```
+
+### get_daily_note
+```json
+{
+  "date": "2026-08-21",
+  "folder": "Daily Notes",
+  "create_if_missing": true
+}
+```
