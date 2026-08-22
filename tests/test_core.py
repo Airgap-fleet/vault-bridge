@@ -24,7 +24,7 @@ class TestPathResolution:
 
     def test_reject_path_traversal(self, core):
         """Test that path traversal is blocked."""
-        with pytest.raises(ValueError, match="escapes vault root"):
+        with pytest.raises(ValueError, match="Path escapes vault root"):
             core._resolve_path("../note1.md")
 
     def test_reject_absolute_traversal(self, core):
