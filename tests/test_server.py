@@ -89,6 +89,131 @@ class TestMCPTools:
             assert name in tool_names, f"Tool {name} not registered"
 
 
+class TestMCPToolIntegration:
+    """Integration tests for MCP tools via the server."""
+
+    def _extract_result(self, tool_result):
+        """Extract the actual result from FastMCP ToolResult."""
+        if hasattr(tool_result, 'structured_content') and tool_result.structured_content:
+            return tool_result.structured_content.get('result')
+        return tool_result
+
+    def test_read_note_not_found(self):
+        """Test read_note returns ErrorResponse for missing file."""
+        import asyncio
+
+        
+        mcp, _ = create_mcp_server()
+        tools = asyncio.run(mcp.list_tools())
+        read_tool = next(t for t in tools if t.name == "read_note")
+        
+        # FastMCP tools expect args wrapped in the parameter name
+        request = {"request": {"path": "nonexistent.md"}}
+        result = asyncio.run(read_tool.run(request))
+        result = self._extract_result(result)
+        
+        assert result["error"] == "FileNotFoundError"
+
+    def test_write_note_and_read_back(self, tmp_path):
+        """Test write_note then read_note roundtrip."""
+        import asyncio
+
+        
+        config = ObsidianConfig(vault_path=str(tmp_path))
+        mcp, _ = create_mcp_server(config)
+        tools = asyncio.run(mcp.list_tools())
+        write_tool = next(t for t in tools if t.name == "write_note")
+        read_tool = next(t for t in tools if t.name == "read_note")
+        
+        # Write a note
+        write_req = {"request": {"path": "test.md", "content": "Hello World", "create_dirs": True}}
+        write_result = asyncio.run(write_tool.run(write_req))
+        write_result = self._extract_result(write_result)
+        assert write_result["path"] == "test.md"
+        
+        # Read it back
+        read_req = {"request": {"path": "test.md"}}
+        read_result = asyncio.run(read_tool.run(read_req))
+        read_result = self._extract_result(read_result)
+        assert read_result["content"] == "Hello World"
+
+    def test_list_notes(self, tmp_path):
+        """Test list_notes returns entries."""
+        import asyncio
+        
+        config = ObsidianConfig(vault_path=str(tmp_path))
+        mcp, _ = create_mcp_server(config)
+        tools = asyncio.run(mcp.list_tools())
+        write_tool = next(t for t in tools if t.name == "write_note")
+        list_tool = next(t for t in tools if t.name == "list_notes")
+        
+        # Write a couple notes
+        asyncio.run(write_tool.run({"request": {"path": "note1.md", "content": "Content 1", "create_dirs": True}}))
+        asyncio.run(write_tool.run({"request": {"path": "sub/note2.md", "content": "Content 2", "create_dirs": True}}))
+        
+        # List them
+        list_req = {"request": {"path": "", "recursive": True}}
+        list_result = asyncio.run(list_tool.run(list_req))
+        list_result = self._extract_result(list_result)
+        assert list_result["total"] >= 2
+        paths = [e["path"].replace("\\", "/") for e in list_result["entries"]]
+        assert "note1.md" in paths
+        assert "sub/note2.md" in paths
+
+    def test_search_notes(self, tmp_path):
+        """Test search_notes finds matches."""
+        import asyncio
+        
+        config = ObsidianConfig(vault_path=str(tmp_path))
+        mcp, _ = create_mcp_server(config)
+        tools = asyncio.run(mcp.list_tools())
+        write_tool = next(t for t in tools if t.name == "write_note")
+        search_tool = next(t for t in tools if t.name == "search_notes")
+        
+        asyncio.run(write_tool.run({"request": {"path": "searchable.md", "content": "Find this needle in haystack", "create_dirs": True}}))
+        
+        search_req = {"request": {"pattern": "needle", "path": ""}}
+        result = asyncio.run(search_tool.run(search_req))
+        result = self._extract_result(result)
+        assert result["total"] == 1
+        assert result["matches"][0]["match"] == "needle"
+
+    def test_search_frontmatter(self, tmp_path):
+        """Test search_frontmatter finds frontmatter matches."""
+        import asyncio
+        
+        config = ObsidianConfig(vault_path=str(tmp_path))
+        mcp, _ = create_mcp_server(config)
+        tools = asyncio.run(mcp.list_tools())
+        write_tool = next(t for t in tools if t.name == "write_note")
+        search_tool = next(t for t in tools if t.name == "search_frontmatter")
+        
+        # Write note with frontmatter
+        content = "---\ntags: [important, review]\n---\nBody content"
+        asyncio.run(write_tool.run({"request": {"path": "fm.md", "content": content, "create_dirs": True}}))
+        
+        search_req = {"request": {"key": "tags", "operator": "contains", "value": "important", "path": ""}}
+        result = asyncio.run(search_tool.run(search_req))
+        result = self._extract_result(result)
+        assert result["total"] == 1
+
+    def test_get_daily_note_create(self, tmp_path):
+        """Test get_daily_note creates new daily note."""
+        import asyncio
+        
+        config = ObsidianConfig(vault_path=str(tmp_path))
+        mcp, _ = create_mcp_server(config)
+        tools = asyncio.run(mcp.list_tools())
+        daily_tool = next(t for t in tools if t.name == "get_daily_note")
+        
+        req = {"request": {"date": "2024-01-15", "folder": "daily", "create_if_missing": True}}
+        result = asyncio.run(daily_tool.run(req))
+        result = self._extract_result(result)
+        assert result["created"] is True
+        assert result["date"] == "2024-01-15"
+        assert "daily/2024-01-15.md" in result["path"].replace("\\", "/")
+
+
 class TestRunFunction:
     """Test the run() function for different transports."""
 

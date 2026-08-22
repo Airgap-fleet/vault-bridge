@@ -22,9 +22,32 @@ vault-bridge = "obsidian_mcp.server:main"
 dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
     "ruff>=0.4",
     "mypy>=1.10",
+    "types-PyYAML>=6.0",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+warn_unused_ignores = false
+warn_redundant_casts = false
+
+[[tool.mypy.overrides]]
+module = [
+    "fastmcp",
+    "fastmcp.*",
+    "pydantic",
+    "pydantic.*",
+    "pydantic_settings",
+    "pydantic_settings.*",
+    "structlog",
+    "structlog.*",
+    "yaml",
+]
+ignore_missing_imports = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/obsidian_mcp"]

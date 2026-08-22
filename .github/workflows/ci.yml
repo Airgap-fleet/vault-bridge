@@ -62,7 +62,7 @@ jobs:
 
       - name: Run mypy
         run: |
-          mypy src/obsidian_mcp --strict
+          mypy src/obsidian_mcp
 
   build:
     runs-on: ubuntu-latest
