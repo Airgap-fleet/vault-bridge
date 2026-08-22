@@ -1,11 +1,6 @@
 """Tests for ObsidianMCP logging configuration."""
 
-import logging
-import sys
-from io import StringIO
-from unittest.mock import patch
 
-import pytest
 import structlog
 
 from obsidian_mcp.logging import configure_logging, get_logger
@@ -210,7 +205,7 @@ class TestLoggingLevels:
         logger.debug("debug.message")
         
         captured = capsys.readouterr()
-        output = captured.out
+        _ = captured.out
         # With structlog + stdlib, debug may still appear depending on config
         # This test documents current behavior
 

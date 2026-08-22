@@ -1,10 +1,7 @@
 """Tests for ObsidianCore path resolution and security."""
 
-import pytest
-from pathlib import Path
 
-from obsidian_mcp.core import ObsidianCore
-from obsidian_mcp.models import ObsidianConfig
+import pytest
 
 
 class TestPathResolution:
@@ -149,7 +146,7 @@ class TestWriteNote:
             content="Atomic write",
             atomic=True
         )
-        resp = core.write_note(req)
+        core.write_note(req)
         
         assert (temp_vault / "atomic.md").exists()
         assert not (temp_vault / "atomic.md.tmp").exists()
@@ -162,7 +159,7 @@ class TestWriteNote:
             content="Nested",
             create_dirs=True
         )
-        resp = core.write_note(req)
+        core.write_note(req)
         
         assert (temp_vault / "new" / "dir" / "structure.md").exists()
 

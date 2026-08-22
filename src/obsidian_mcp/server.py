@@ -2,29 +2,29 @@
 Stateless protocol (2026-07-28): no global session state, explicit config per request.
 """
 
-import sys
+import re
+
 from fastmcp import FastMCP
-from fastmcp.server.auth import TokenVerifier, AccessToken
+from fastmcp.server.auth import AccessToken, TokenVerifier
 
 from .core import ObsidianCore
+from .logging import configure_logging, get_logger
 from .models import (
-    ObsidianConfig,
-    ReadNoteRequest,
-    ReadNoteResponse,
-    WriteNoteRequest,
-    WriteNoteResponse,
-    ListNotesRequest,
-    ListNotesResponse,
-    SearchNotesRequest,
-    SearchNotesResponse,
-    SearchFrontmatterRequest,
-    SearchFrontmatterResponse,
     DailyNoteRequest,
     DailyNoteResponse,
     ErrorResponse,
+    ListNotesRequest,
+    ListNotesResponse,
+    ObsidianConfig,
+    ReadNoteRequest,
+    ReadNoteResponse,
+    SearchFrontmatterRequest,
+    SearchFrontmatterResponse,
+    SearchNotesRequest,
+    SearchNotesResponse,
+    WriteNoteRequest,
+    WriteNoteResponse,
 )
-
-from .logging import configure_logging, get_logger
 
 
 class APIKeyVerifier(TokenVerifier):
@@ -70,9 +70,12 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.read_note(request)
-        except Exception as e:
+        except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
             logger.error("read_note.error", path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
+        except Exception:
+            logger.exception("read_note.unexpected", path=request.path)
+            return ErrorResponse(error="InternalError", message="Unexpected error reading note")
 
     @mcp.tool()
     def write_note(request: WriteNoteRequest) -> WriteNoteResponse | ErrorResponse:
@@ -80,9 +83,12 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.write_note(request)
-        except Exception as e:
+        except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
             logger.error("write_note.error", path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
+        except Exception:
+            logger.exception("write_note.unexpected", path=request.path)
+            return ErrorResponse(error="InternalError", message="Unexpected error writing note")
 
     @mcp.tool()
     def list_notes(request: ListNotesRequest) -> ListNotesResponse | ErrorResponse:
@@ -90,9 +96,12 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.list_notes(request)
-        except Exception as e:
+        except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
             logger.error("list_notes.error", path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
+        except Exception:
+            logger.exception("list_notes.unexpected", path=request.path)
+            return ErrorResponse(error="InternalError", message="Unexpected error listing notes")
 
     @mcp.tool()
     def search_notes(request: SearchNotesRequest) -> SearchNotesResponse | ErrorResponse:
@@ -100,9 +109,12 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.search_notes(request)
-        except Exception as e:
+        except (FileNotFoundError, PermissionError, OSError, ValueError, re.error) as e:
             logger.error("search_notes.error", pattern=request.pattern, path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
+        except Exception:
+            logger.exception("search_notes.unexpected", pattern=request.pattern)
+            return ErrorResponse(error="InternalError", message="Unexpected error searching notes")
 
     @mcp.tool()
     def search_frontmatter(request: SearchFrontmatterRequest) -> SearchFrontmatterResponse | ErrorResponse:
@@ -110,9 +122,12 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.search_frontmatter(request)
-        except Exception as e:
+        except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
             logger.error("search_frontmatter.error", key=request.key, operator=request.operator, path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
+        except Exception:
+            logger.exception("search_frontmatter.unexpected", key=request.key)
+            return ErrorResponse(error="InternalError", message="Unexpected error searching frontmatter")
 
     @mcp.tool()
     def get_daily_note(request: DailyNoteRequest) -> DailyNoteResponse | ErrorResponse:
@@ -120,9 +135,12 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.get_daily_note(request)
-        except Exception as e:
+        except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
             logger.error("get_daily_note.error", date=request.date, folder=request.folder, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
+        except Exception:
+            logger.exception("get_daily_note.unexpected", date=request.date)
+            return ErrorResponse(error="InternalError", message="Unexpected error getting daily note")
 
     def run():
         """Entry point for the vault-bridge CLI."""
@@ -130,9 +148,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         
         if config.transport == "stdio":
             mcp.run()
-        elif config.transport == "sse":
-            mcp.run_http_async()
-        elif config.transport == "streamable-http":
+        elif config.transport == "sse" or config.transport == "streamable-http":
             mcp.run_http_async()
         else:
             logger.error("server.invalid_transport", transport=config.transport)
@@ -143,7 +159,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
 
 def main():
     """Entry point for the vault-bridge CLI."""
-    mcp, run = create_mcp_server()
+    _, run = create_mcp_server()
     run()
 
 

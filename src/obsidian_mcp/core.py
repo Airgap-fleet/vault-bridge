@@ -1,33 +1,31 @@
 """Core filesystem operations for Obsidian MCP Server."""
 
-import os
 import re
-import yaml
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Optional
-from datetime import datetime
+from typing import Any
 
+import yaml
+
+from .logging import get_logger
 from .models import (
-    ObsidianConfig,
-    ReadNoteRequest,
-    ReadNoteResponse,
-    WriteNoteRequest,
-    WriteNoteResponse,
+    DailyNoteRequest,
+    DailyNoteResponse,
+    FrontmatterMatch,
     ListNotesRequest,
     ListNotesResponse,
     NoteEntry,
-    SearchNotesRequest,
-    SearchNotesResponse,
-    SearchMatch,
+    ObsidianConfig,
+    ReadNoteRequest,
+    ReadNoteResponse,
     SearchFrontmatterRequest,
     SearchFrontmatterResponse,
-    FrontmatterMatch,
-    DailyNoteRequest,
-    DailyNoteResponse,
-    ErrorResponse,
+    SearchMatch,
+    SearchNotesRequest,
+    SearchNotesResponse,
+    WriteNoteRequest,
+    WriteNoteResponse,
 )
-
-from .logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -35,7 +33,7 @@ logger = get_logger(__name__)
 class ObsidianCore:
     """Core operations for Obsidian vault interaction."""
 
-    def __init__(self, config: Optional[ObsidianConfig] = None):
+    def __init__(self, config: ObsidianConfig | None = None):
         self.config = config or ObsidianConfig()
         self._vault_root = self.config.resolved_vault_path
 
@@ -323,12 +321,12 @@ class ObsidianCore:
         logger.debug("get_daily_note.start", date=request.date, folder=request.folder, create_if_missing=request.create_if_missing)
         if request.date:
             try:
-                date = datetime.strptime(request.date, "%Y-%m-%d")
+                date = datetime.strptime(request.date, "%Y-%m-%d").replace(tzinfo=UTC)
             except ValueError:
                 logger.warning("get_daily_note.invalid_date", date=request.date)
                 raise ValueError("Date must be in YYYY-MM-DD format")
         else:
-            date = datetime.now()
+            date = datetime.now(UTC)
 
         date_str = date.strftime("%Y-%m-%d")
         folder = request.folder.rstrip("/")

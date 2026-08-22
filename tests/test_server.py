@@ -1,9 +1,8 @@
 """Tests for ObsidianMCP server factory and CLI."""
 
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
-from fastmcp.server.auth import AccessToken
 
 from obsidian_mcp.models import ObsidianConfig
 from obsidian_mcp.server import APIKeyVerifier, create_mcp_server
@@ -43,34 +42,34 @@ class TestCreateMCPServer:
 
     def test_create_server_default_config(self):
         """Test server creation with default config."""
-        mcp, run = create_mcp_server()
+        mcp, _run = create_mcp_server()
         assert mcp is not None
-        assert callable(run)
-        assert mcp.name == "Obsidian Vault"
+        assert callable(_run)
+        assert mcp.name == "Vault Bridge"
 
     def test_create_server_custom_config(self):
         """Test server creation with custom config."""
         config = ObsidianConfig(vault_path="/custom/vault", log_level="DEBUG")
-        mcp, run = create_mcp_server(config)
+        mcp, _run = create_mcp_server(config)
         assert mcp is not None
-        assert callable(run)
+        assert callable(_run)
 
     def test_create_server_auth_enabled_for_http(self):
         """Test auth is enabled for SSE/HTTP transports with API key."""
         config = ObsidianConfig(api_key="secret-key", transport="sse")
-        mcp, run = create_mcp_server(config)
+        mcp, _run = create_mcp_server(config)
         assert mcp.auth is not None
 
     def test_create_server_auth_disabled_for_stdio(self):
         """Test auth is disabled for stdio transport even with API key."""
         config = ObsidianConfig(api_key="secret-key", transport="stdio")
-        mcp, run = create_mcp_server(config)
+        mcp, _run = create_mcp_server(config)
         assert mcp.auth is None
 
     def test_create_server_auth_disabled_no_key(self):
         """Test auth is disabled when no API key configured."""
         config = ObsidianConfig(transport="sse")
-        mcp, run = create_mcp_server(config)
+        mcp, _run = create_mcp_server(config)
         assert mcp.auth is None
 
 
@@ -97,7 +96,7 @@ class TestRunFunction:
     def test_run_stdio(self, mock_run):
         """Test stdio transport calls mcp.run()."""
         config = ObsidianConfig(transport="stdio")
-        mcp, run = create_mcp_server(config)
+        _, run = create_mcp_server(config)
         run()
         mock_run.assert_called_once()
 
@@ -105,7 +104,7 @@ class TestRunFunction:
     def test_run_sse(self, mock_run_http):
         """Test SSE transport calls mcp.run_http_async()."""
         config = ObsidianConfig(transport="sse")
-        mcp, run = create_mcp_server(config)
+        _, run = create_mcp_server(config)
         run()
         mock_run_http.assert_called_once()
 
@@ -113,7 +112,7 @@ class TestRunFunction:
     def test_run_streamable_http(self, mock_run_http):
         """Test streamable-http transport calls mcp.run_http_async()."""
         config = ObsidianConfig(transport="streamable-http")
-        mcp, run = create_mcp_server(config)
+        _, run = create_mcp_server(config)
         run()
         mock_run_http.assert_called_once()
 
