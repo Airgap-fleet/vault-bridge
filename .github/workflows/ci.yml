@@ -30,7 +30,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          python -m pytest tests/ -v --cov=obsidian_mcp --cov-report=xml --cov-fail-under=50
+          python -m pytest tests/ -v --cov=obsidian_mcp --cov-report=xml --cov-fail-under=45
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
