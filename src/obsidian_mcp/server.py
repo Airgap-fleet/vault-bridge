@@ -246,8 +246,9 @@ def create_mcp_server(config: ObsidianConfig | None = None) -> tuple[FastMCP, Ca
         try:
             # This is a management tool - run the configure logic directly
             from click.testing import CliRunner
+
             from .configure import main as configure_main
-            
+
             runner = CliRunner()
             result = runner.invoke(configure_main, [
                 "--vault-path", request.vault_path,
