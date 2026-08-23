@@ -1,15 +1,15 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.afaas/obsidian-mcp",
+  "name": "io.github.afaas/vault-bridge",
   "description": "Local-first Obsidian vault operations for AI agents — read, write, search, and manage notes with full frontmatter support. Air-gapped, regulated-industry ready, runs on your hardware.",
   "repository": {
-    "url": "https://github.com/afaas/obsidian-mcp.git",
+    "url": "https://github.com/airgap-fleet/vault-bridge.git",
     "source": "github"
   },
   "version": "1.0.0",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/afaas/obsidian-mcp/main/dxt/icon.png",
+      "src": "https://raw.githubusercontent.com/airgap-fleet/vault-bridge/main/dxt/icon.png",
       "mimeType": "image/png",
       "sizes": ["256x256"]
     }
@@ -17,7 +17,7 @@
   "packages": [
     {
       "registryType": "pypi",
-      "identifier": "obsidian-mcp",
+      "identifier": "vault-bridge",
       "version": "1.0.0",
       "runtimeHint": "python",
       "transport": {
@@ -68,7 +68,7 @@
     },
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/afaas/obsidian-mcp:1.0.0",
+      "identifier": "ghcr.io/airgap-fleet/vault-bridge:1.0.0",
       "runtimeHint": "docker",
       "transport": {
         "type": "stdio"

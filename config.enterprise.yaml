@@ -1,0 +1,105 @@
+# Vault Bridge — Enterprise Configuration Template
+# Copy to config.yaml or use as .env reference
+# All values can be overridden via environment variables (OBSIDIAN_MCP_*)
+
+# =============================================================================
+# VAULT SETTINGS (Required)
+# =============================================================================
+vault_path: "/path/to/your/vault"           # REQUIRED - Absolute path to Obsidian vault root
+# vault_path: "C:\\Users\\user\\Documents\\MyVault"  # Windows example
+# vault_path: "/mnt/vault"                     # Docker/K8s mount example
+
+# Multi-vault (optional) - configure additional vaults via API after startup
+# vaults:
+#   - name: "TeamVault"
+#     path: "/shared/team-vault"
+#   - name: "ProjectVault"
+#     path: "/projects/alpha-vault"
+
+max_file_size: 10485760                       # 10 MB (bytes) - max read/write size
+default_encoding: "utf-8"                     # Text encoding
+index_frontmatter: true                       # Parse YAML frontmatter
+follow_symlinks: false                        # Security: don't follow symlinks
+
+# =============================================================================
+# TRANSPORT SETTINGS
+# =============================================================================
+transport: "stdio"                            # stdio | sse | streamable-http
+# transport: "sse"                            # For HTTP clients (Cursor, VS Code, web)
+# transport: "streamable-http"                # Modern HTTP transport (MCP 2025-06-18)
+
+host: "127.0.0.1"                             # Bind address (0.0.0.0 for containers)
+port: 8000                                    # Port for SSE/HTTP
+path: "/mcp"                                  # MCP endpoint path
+
+# =============================================================================
+# AUTHENTICATION (Required for SSE/HTTP)
+# =============================================================================
+api_key: ""                                   # REQUIRED for sse/streamable-http
+# api_key: "sk-vault-bridge-{{RANDOM}}"       # Generate with: openssl rand -hex 32
+api_key_header: "X-API-Key"                   # Header name for API key
+
+# =============================================================================
+# LOGGING (SIEM/Compliance Ready)
+# =============================================================================
+log_level: "INFO"                             # DEBUG | INFO | WARNING | ERROR
+log_json: true                                # true = JSON structured logs (SIEM)
+# log_json: false                             # false = human-readable console
+
+# =============================================================================
+# SECURITY / COMPLIANCE
+# =============================================================================
+read_only: false                              # true = block write/delete (audit/compliance)
+# read_only: true                             # Enable for regulated environments
+
+# Rate limiting (per client IP / API key)
+rate_limit_enabled: true                      # Enable rate limiting
+rate_limit_requests: 100                      # Max requests per window
+rate_limit_window_seconds: 60                 # Time window (seconds)
+rate_limit_storage: "memory"                  # memory | redis (production: redis)
+
+# Redis for distributed rate limiting (production)
+# redis_url: "redis://localhost:6379/0"
+# redis_url: "rediss://user:pass@redis.internal:6379/0"  # TLS
+
+# Connection pooling (opt-in, for high-throughput DB access)
+pool_size: 0                                  # 0 = stateless (new connection per request)
+# pool_size: 10                               # >0 = connection pool size
+pool_timeout: 30                              # Pool acquire timeout (seconds)
+
+# =============================================================================
+# ENTERPRISE FEATURES
+# =============================================================================
+
+# Audit logging (additional structured fields)
+audit_enabled: true                           # Log all tool calls with user/context
+# audit_sink: "stdout"                        # stdout | file | syslog | http
+# audit_file: "/var/log/vault-bridge/audit.log"
+
+# Health checks (K8s readiness/liveness)
+health_check_enabled: true
+# health_check_path: "/health"
+# readiness_path: "/ready"
+
+# Metrics (Prometheus)
+metrics_enabled: true
+# metrics_path: "/metrics"
+
+# =============================================================================
+# DOCKER / K8S DEFAULTS (when running in container)
+# =============================================================================
+# ENVIRONMENT VARIABLES (all settings support OBSIDIAN_MCP_* prefix):
+# OBSIDIAN_MCP_VAULT_PATH=/vault
+# OBSIDIAN_MCP_TRANSPORT=streamable-http
+# OBSIDIAN_MCP_HOST=0.0.0.0
+# OBSIDIAN_MCP_PORT=8000
+# OBSIDIAN_MCP_API_KEY=${VAULT_BRIDGE_API_KEY}
+# OBSIDIAN_MCP_LOG_LEVEL=INFO
+# OBSIDIAN_MCP_LOG_JSON=true
+# OBSIDIAN_MCP_READ_ONLY=false
+# OBSIDIAN_MCP_RATE_LIMIT_ENABLED=true
+# OBSIDIAN_MCP_RATE_LIMIT_REQUESTS=100
+# OBSIDIAN_MCP_RATE_LIMIT_WINDOW_SECONDS=60
+# OBSIDIAN_MCP_REDIS_URL=redis://redis:6379/0
+# OBSIDIAN_MCP_POOL_SIZE=0
+# OBSIDIAN_MCP_READ_ONLY=true

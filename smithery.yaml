@@ -1,0 +1,35 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+startCommand:
+  type: stdio
+configSchema:
+  type: object
+  required:
+    - vault_path
+  properties:
+    vault_path:
+      type: string
+      description: Path to Obsidian vault (required)
+    read_only:
+      type: boolean
+      default: false
+      description: Enable read-only mode (no write/delete operations)
+    api_key:
+      type: string
+      description: Optional API key for authentication (HTTP/SSE transports)
+      default: ""
+    log_level:
+      type: string
+      enum: ["DEBUG", "INFO", "WARNING", "ERROR"]
+      default: "INFO"
+      description: Logging level
+commandFunction: |
+  (config) => ({
+    "command": "python",
+    "args": ["-m", "obsidian_mcp.server"],
+    "env": {
+      "OBSIDIAN_VAULT_PATH": config.vault_path,
+      "OBSIDIAN_READ_ONLY": String(config.read_only),
+      "OBSIDIAN_API_KEY": config.api_key,
+      "OBSIDIAN_LOG_LEVEL": config.log_level
+    }
+  })

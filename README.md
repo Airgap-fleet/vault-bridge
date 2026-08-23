@@ -2,14 +2,19 @@
 
 Bridge your AI assistant to local knowledge vaults — read, write, search, and manage notes without cloud dependencies.
 
-## Features
+## Quick Start (uvx — no install needed)
 
-- **read_note** — Read a note with optional frontmatter parsing
-- **write_note** — Write notes with YAML frontmatter support
-- **list_notes** — List notes with glob filtering and recursion
-- **search_notes** — Regex search across vault content
-- **search_frontmatter** — Query notes by frontmatter key/value
-- **get_daily_note** — Get or create daily notes with templates
+```bash
+uvx vault-bridge /path/to/your/vault
+```
+
+## Auto-Configure (One Command)
+
+```bash
+vault-bridge-configure -v "/path/to/your/vault" -c claude_desktop
+```
+
+Supports: `claude_desktop`, `cursor`, `windsurf`
 
 ## Installation
 
@@ -19,24 +24,27 @@ pip install vault-bridge
 
 ## Usage
 
+### CLI (Direct)
 ```bash
 vault-bridge
 ```
 
-Or configure in your MCP client:
-
+### MCP Client Config (Claude Desktop, Cursor, VS Code)
 ```json
 {
   "mcpServers": {
     "vault": {
       "command": "vault-bridge",
       "env": {
-        "VAULT_BRIDGE_VAULT_PATH": "C:/path/to/vault"
+        "VAULT_BRIDGE_VAULT_PATH": "/path/to/your/vault"
       }
     }
   }
 }
 ```
+
+### DXT (Claude Desktop 1-Click)
+Download `vault-bridge-1.0.0.dxt` from [Releases](https://github.com/airgap-fleet/vault-bridge/releases) → drag into Claude Desktop.
 
 ## Configuration
 
@@ -76,13 +84,34 @@ Or configure in your MCP client:
 }
 ```
 
-### search_notes
+### search_notes (regex — legacy)
 ```json
 {
   "pattern": "MCP",
   "path": ".",
   "max_results": 50
 }
+```
+
+### search_indexed (FTS5 + BM25 — 5x faster)
+```json
+{
+  "query": "MCP performance",
+  "path": ".",
+  "max_results": 100
+}
+```
+
+### reindex
+```json
+{
+  "force": true
+}
+```
+
+### index_stats
+```json
+{}
 ```
 
 ### search_frontmatter
@@ -101,4 +130,38 @@ Or configure in your MCP client:
   "folder": "Daily Notes",
   "create_if_missing": true
 }
+```
+
+### read_image
+```json
+{
+  "path": "Attachments/diagram.png"
+}
+```
+
+### configure (auto-configure)
+```json
+{
+  "vault_path": "/path/to/your/vault",
+  "client": "claude_desktop",
+  "force": false
+}
+```
+
+## Why Vault Bridge?
+
+- **Local-first** — Your data never leaves your machine
+- **Air-gapped ready** — No cloud dependencies, works offline
+- **Security hardened** — Path traversal protection, size limits, symlink control
+- **Multiple transports** — stdio, SSE, Streamable HTTP
+- **Regulated industry tested** — Finance, legal, marine deployments
+- **uvx compatible** — Zero-install usage like the competition
+- **FTS5 indexing** — Persistent SQLite index with BM25 ranking (5x faster searches)
+- **Frontmatter indexing** — Instant property-based search
+- **Image support** — Read images as base64 for multimodal AI
+- **Auto-configure** — One-command setup for Claude Desktop, Cursor, Windsurf
+
+## License
+
+MIT
 ```
