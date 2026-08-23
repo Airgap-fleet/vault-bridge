@@ -245,7 +245,6 @@ def create_mcp_server(config: ObsidianConfig | None = None) -> tuple[FastMCP, Ca
         """Auto-configure vault-bridge for an AI client (Claude Desktop, Cursor, Windsurf)."""
         try:
             # This is a management tool - run the configure logic directly
-            import sys
             from click.testing import CliRunner
             from .configure import main as configure_main
             
