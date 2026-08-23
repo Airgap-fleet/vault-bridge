@@ -1,6 +1,8 @@
 """Structured logging configuration for Obsidian MCP."""
 
 import sys
+from collections.abc import Callable, Mapping, MutableMapping
+from typing import Any
 
 import structlog
 from structlog.stdlib import LoggerFactory
@@ -24,7 +26,6 @@ def configure_logging(level: str = "INFO", json_output: bool = True) -> None:
     )
     
     # Configure structlog processors
-    from typing import Callable, Any, Mapping, MutableMapping
     processors: list[Callable[[Any, str, MutableMapping[str, Any]], Mapping[str, Any] | str | bytes | bytearray | tuple[Any, ...]]] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_logger_name,
@@ -50,4 +51,4 @@ def configure_logging(level: str = "INFO", json_output: bool = True) -> None:
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """Get a structured logger instance."""
-    return structlog.get_logger(name)  # type: ignore[return-value]
+    return structlog.get_logger(name)  # type: ignore[no-any-return]

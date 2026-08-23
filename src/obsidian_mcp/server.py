@@ -3,6 +3,7 @@ Stateless protocol (2026-07-28): no global session state, explicit config per re
 """
 
 import re
+from collections.abc import Callable
 
 from fastmcp import FastMCP
 from fastmcp.server.auth import AccessToken, TokenVerifier
@@ -45,7 +46,7 @@ def create_core(config: ObsidianConfig) -> ObsidianCore:
     return ObsidianCore(config)
 
 
-def create_mcp_server(config: ObsidianConfig | None = None) -> tuple:
+def create_mcp_server(config: ObsidianConfig | None = None) -> tuple[FastMCP, Callable[[], None]]:
     """Create and configure the FastMCP server."""
     config = config or ObsidianConfig()
     
@@ -158,7 +159,7 @@ def create_mcp_server(config: ObsidianConfig | None = None) -> tuple:
     return mcp, run
 
 
-def main():
+def main() -> None:
     """Entry point for the vault-bridge CLI."""
     _, run = create_mcp_server()
     run()

@@ -70,7 +70,7 @@ class ObsidianCore:
 
     def _format_frontmatter(self, fm: dict[str, Any]) -> str:
         """Format frontmatter as YAML."""
-        return "---\n" + yaml.dump(fm, default_flow_style=False, sort_keys=False) + "---\n"
+        return "---\n" + str(yaml.dump(fm, default_flow_style=False, sort_keys=False)) + "---\n"
 
     def read_note(self, request: ReadNoteRequest) -> ReadNoteResponse:
         """Read a note from the vault."""
@@ -240,25 +240,25 @@ class ObsidianCore:
 
         def compare(op: str, a: Any, b: Any) -> bool:
             if op == "eq":
-                return a == b
+                return bool(a == b)
             elif op == "ne":
-                return a != b
+                return bool(a != b)
             elif op == "contains":
-                return str(b).lower() in str(a).lower()
+                return bool(str(b).lower() in str(a).lower())
             elif op == "startswith":
-                return str(a).lower().startswith(str(b).lower())
+                return bool(str(a).lower().startswith(str(b).lower()))
             elif op == "endswith":
-                return str(a).lower().endswith(str(b).lower())
+                return bool(str(a).lower().endswith(str(b).lower()))
             elif op == "gt":
-                return a > b
+                return bool(a > b)
             elif op == "lt":
-                return a < b
+                return bool(a < b)
             elif op == "gte":
-                return a >= b
+                return bool(a >= b)
             elif op == "lte":
-                return a <= b
+                return bool(a <= b)
             elif op == "exists":
-                return a is not None
+                return bool(a is not None)
             return False
 
         for f in base_path.rglob(glob_pat.replace("**/", "")):
@@ -333,6 +333,7 @@ class ObsidianCore:
         path = self._resolve_path(f"{folder}/{date_str}.md")
 
         created = False
+        frontmatter: dict[str, Any] | None = None
         if not path.exists():
             if not request.create_if_missing:
                 logger.warning("get_daily_note.not_found", path=str(path))
@@ -349,7 +350,8 @@ class ObsidianCore:
             logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
         else:
             content = path.read_text(encoding=self.config.default_encoding)
-            frontmatter, content = self._parse_frontmatter(content)
+            parsed_fm, content = self._parse_frontmatter(content)
+            frontmatter = parsed_fm
             logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
 
         return DailyNoteResponse(
