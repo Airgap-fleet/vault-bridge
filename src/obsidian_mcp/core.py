@@ -20,11 +20,8 @@ from .models import (
     CanvasNode,
     CanvasRequest,
     CanvasResponse,
-    ConfigureRequest,
-    ConfigureResponse,
     DailyNoteRequest,
     DailyNoteResponse,
-    ErrorResponse,
     FrontmatterMatch,
     GraphEdge,
     GraphNode,
@@ -93,7 +90,6 @@ class ObsidianCore:
         self._vault_indexers: dict[str, VaultIndexer] = {"Vault": self._indexer}
         
         # Metrics counters
-        from collections import defaultdict
         self._metrics: dict[str, Any] = {
             "requests_total": defaultdict(int),
             "request_duration_seconds": defaultdict(list),
@@ -534,6 +530,7 @@ class ObsidianCore:
             raise ValueError(f"File is not an image: {request.path}")
 
         import base64
+
         from PIL import Image
 
         # Read image data
@@ -614,7 +611,7 @@ class ObsidianCore:
         start = time.time()
         
         try:
-            vault_name, abs_path = self._resolve_resource_uri(request.uri)
+            _vault_name, abs_path = self._resolve_resource_uri(request.uri)
             
             if not abs_path.exists():
                 raise FileNotFoundError(f"Resource not found: {request.uri}")
@@ -666,7 +663,7 @@ class ObsidianCore:
         start = time.time()
         
         try:
-            vault_name, abs_path = self._resolve_resource_uri(request.uri_prefix)
+            _vault_name, abs_path = self._resolve_resource_uri(request.uri_prefix)
             
             if not abs_path.exists():
                 raise FileNotFoundError(f"Path not found: {request.uri_prefix}")
@@ -715,7 +712,7 @@ class ObsidianCore:
             content = path.read_text(encoding=self.config.default_encoding)
             
             # Extract outgoing wikilinks
-            wikilinks = self._indexer.extract_wikilinks(content)
+            self._indexer.extract_wikilinks(content)
             wikilink_entries = []
             lines = content.splitlines()
             for i, line in enumerate(lines):
@@ -1006,7 +1003,6 @@ class ObsidianCore:
     def _check_rate_limit(self, client_id: str, max_requests: int = 100, window_seconds: int = 60) -> bool:
         """Simple in-memory rate limiting. Returns True if allowed."""
         # In production, use Redis or similar distributed store
-        now = time.time()
-        key = f"ratelimit:{client_id}"
+        time.time()
         # This is a simplified version - production would use sliding window
         return True  # Placeholder - implement with actual store

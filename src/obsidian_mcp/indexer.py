@@ -4,8 +4,9 @@ import re
 import sqlite3
 import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from .logging import get_logger
 
@@ -421,7 +422,7 @@ class VaultIndexer:
 
     def close(self) -> None:
         """Close any open connections (cleanup)."""
-        pass  # SQLite connections are per-operation
+        # SQLite connections are per-operation
 
     def _get_conn(self) -> sqlite3.Connection:
         """Get a new database connection for external use."""
@@ -434,7 +435,6 @@ class VaultIndexer:
     
     def extract_wikilinks(self, content: str) -> list[dict[str, Any]]:
         """Extract [[wikilinks]] from content. Returns list of {target, alias, line, context}."""
-        import re
         links = []
         # Pattern: [[target]] or [[target|alias]]
         pattern = re.compile(r'\[\[([^\]]+?)(?:\|([^\]]+))?\]\]')

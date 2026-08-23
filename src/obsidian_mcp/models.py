@@ -306,7 +306,6 @@ class ErrorResponse(BaseModel):
 class IndexStatsRequest(BaseModel):
     """Request model for index_stats tool."""
 
-    pass
 
 
 class IndexStatsResponse(BaseModel):
@@ -610,7 +609,6 @@ class MultiVaultConfigResponse(BaseModel):
 class MultiVaultStatusRequest(BaseModel):
     """Request model for multi_vault_status tool."""
 
-    pass
 
 
 class MultiVaultStatusResponse(BaseModel):
@@ -626,7 +624,6 @@ class MultiVaultStatusResponse(BaseModel):
 class MetricsRequest(BaseModel):
     """Request model for metrics tool."""
 
-    pass
 
 
 class MetricsResponse(BaseModel):
