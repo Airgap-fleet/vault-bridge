@@ -11,6 +11,8 @@ from fastmcp.server.auth import AccessToken, TokenVerifier
 from .core import ObsidianCore
 from .logging import configure_logging, get_logger
 from .models import (
+    CanvasRequest,
+    CanvasResponse,
     ConfigureRequest,
     ConfigureResponse,
     DailyNoteRequest,
