@@ -196,7 +196,7 @@ class ObsidianCore:
                     self._indexer._index_single_file(
                         self._indexer._get_conn(), rel_path, path
                     )
-        except Exception as e:
+        except OSError as e:
             logger.debug("write_note.index_update_failed", path=request.path, error=str(e))
 
         stat = path.stat()
@@ -934,7 +934,7 @@ class ObsidianCore:
                 self._vault_indexers[vault.name] = indexer
                 configured.append(vault.name)
                 logger.info("multi_vault_config.added", name=vault.name, path=str(vault_path))
-            except Exception as e:
+            except OSError as e:
                 failed.append(vault.name)
                 logger.error("multi_vault_config.failed", name=vault.name, error=str(e))
         

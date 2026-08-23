@@ -149,7 +149,7 @@ class VaultIndexer:
             fm = yaml.safe_load(parts[1])
             body = parts[2].lstrip("\n")
             return fm if isinstance(fm, dict) else None, body
-        except Exception:
+        except yaml.YAMLError:
             return None, content
 
     def _index_single_file(self, conn: sqlite3.Connection, rel_path: Path, abs_path: Path, vault_name: str = "Vault") -> None:
@@ -248,7 +248,7 @@ class VaultIndexer:
                         try:
                             self._index_single_file(conn, rel_path, abs_path, vault_name)
                             stats["indexed"] += 1
-                        except Exception as e:
+                        except OSError as e:
                             logger.error("index.file_error", path=rel_str, error=str(e))
                             stats["errors"] += 1
                     else:
