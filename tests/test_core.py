@@ -29,7 +29,7 @@ class TestPathResolution:
 
     def test_reject_absolute_traversal(self, core):
         """Test that absolute path with traversal is blocked."""
-        with pytest.raises(ValueError, match="Path escapes vault root"):
+        with pytest.raises(ValueError, match="Absolute paths not allowed; use paths relative to vault root"):
             core._resolve_path("/tmp/../../etc/passwd")
 
 
