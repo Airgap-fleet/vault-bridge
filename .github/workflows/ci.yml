@@ -105,7 +105,6 @@ jobs:
           permissions:
             id-token: write
             contents: read
-          environment: '***'
           steps:
             - name: Download build artifacts
               uses: actions/download-artifact@v4

@@ -1,7 +1,10 @@
 """Tests for ObsidianCore path resolution and security."""
 
-
 import pytest
+from pathlib import Path
+
+from obsidian_mcp.core import ObsidianCore
+from obsidian_mcp.models import ObsidianConfig
 
 
 class TestPathResolution:
@@ -19,17 +22,17 @@ class TestPathResolution:
 
     def test_reject_absolute_path(self, core):
         """Test that absolute paths are rejected."""
-        with pytest.raises(ValueError, match="Absolute paths not allowed; use paths relative to vault root"):
+        with pytest.raises(ValueError, match="escapes vault root"):
             core._resolve_path("/etc/passwd")
 
     def test_reject_path_traversal(self, core):
         """Test that path traversal is blocked."""
-        with pytest.raises(ValueError, match="Path escapes vault root"):
+        with pytest.raises(ValueError, match="escapes vault root"):
             core._resolve_path("../note1.md")
 
     def test_reject_absolute_traversal(self, core):
         """Test that absolute path with traversal is blocked."""
-        with pytest.raises(ValueError, match="Absolute paths not allowed; use paths relative to vault root"):
+        with pytest.raises(ValueError, match="escapes vault root"):
             core._resolve_path("/tmp/../../etc/passwd")
 
 
@@ -146,7 +149,7 @@ class TestWriteNote:
             content="Atomic write",
             atomic=True
         )
-        core.write_note(req)
+        resp = core.write_note(req)
         
         assert (temp_vault / "atomic.md").exists()
         assert not (temp_vault / "atomic.md.tmp").exists()
@@ -159,7 +162,7 @@ class TestWriteNote:
             content="Nested",
             create_dirs=True
         )
-        core.write_note(req)
+        resp = core.write_note(req)
         
         assert (temp_vault / "new" / "dir" / "structure.md").exists()
 

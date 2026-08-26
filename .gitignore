@@ -56,4 +56,4 @@ logs/
 .ruff_cache/
 
 # Coverage
-htmlcov/.vault-bridge/
+htmlcov/

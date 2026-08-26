@@ -1,9 +1,11 @@
 """Pytest configuration and fixtures for Obsidian MCP tests."""
 
+import os
 import tempfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 from obsidian_mcp.models import ObsidianConfig
 
