@@ -1,8 +1,8 @@
 """Obsidian MCP Server package."""
 
-from .models import ObsidianConfig
 from .core import ObsidianCore
+from .models import ObsidianConfig
 from .server import create_mcp_server
 
-__all__ = ["create_mcp_server", "ObsidianConfig", "ObsidianCore"]
+__all__ = ["ObsidianConfig", "ObsidianCore", "create_mcp_server"]
 __version__ = "1.0.0"

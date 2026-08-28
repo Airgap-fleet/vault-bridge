@@ -1,8 +1,9 @@
 """Structured logging configuration for Obsidian MCP."""
 
 import sys
+
 import structlog
-from structlog.stdlib import add_log_level, LoggerFactory
+from structlog.stdlib import LoggerFactory
 
 
 def configure_logging(level: str = "INFO", json_output: bool = True) -> None:
