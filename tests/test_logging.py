@@ -1,11 +1,6 @@
 """Tests for ObsidianMCP logging configuration."""
 
-import logging
-import sys
-from io import StringIO
-from unittest.mock import patch
 
-import pytest
 import structlog
 
 from obsidian_mcp.logging import configure_logging, get_logger
@@ -202,17 +197,16 @@ class TestLoggingLevels:
         assert "debug.message" in output
 
     def test_info_level_suppresses_debug(self, capsys):
-        """Test INFO level suppresses debug messages."""
-        structlog.reset_defaults()
-        configure_logging(level="INFO", json_output=True)
-        
-        logger = get_logger("test")
-        logger.debug("debug.message")
-        
-        captured = capsys.readouterr()
-        output = captured.out
-        # With structlog + stdlib, debug may still appear depending on config
-        # This test documents current behavior
+            """Test INFO level suppresses debug messages."""
+            structlog.reset_defaults()
+            configure_logging(level="INFO", json_output=True)
+
+            logger = get_logger("test")
+            logger.debug("debug.message")
+
+            capsys.readouterr()
+            # With structlog + stdlib, debug may still appear depending on config
+            # This test documents current behavior
 
     def test_warning_level_outputs_warning(self, capsys):
         """Test WARNING level outputs warnings."""
