@@ -95,7 +95,7 @@ class TestRunFunction:
         """Test stdio transport calls mcp.run()."""
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        mcp._run()
+        mcp.run()
         mock_run.assert_called_once()
 
     @patch("obsidian_mcp.server.FastMCP.run_http_async")
@@ -103,7 +103,7 @@ class TestRunFunction:
         """Test SSE transport calls mcp.run_http_async()."""
         config = ObsidianConfig(transport="sse")
         mcp = create_mcp_server(config)
-        mcp._run()
+        mcp.run()
         mock_run_http.assert_called_once()
 
     @patch("obsidian_mcp.server.FastMCP.run_http_async")
@@ -111,7 +111,7 @@ class TestRunFunction:
         """Test streamable-http transport calls mcp.run_http_async()."""
         config = ObsidianConfig(transport="streamable-http")
         mcp = create_mcp_server(config)
-        mcp._run()
+        mcp.run()
         mock_run_http.assert_called_once()
 
     def test_run_invalid_transport_raises_at_config(self):
