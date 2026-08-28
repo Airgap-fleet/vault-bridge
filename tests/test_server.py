@@ -128,7 +128,7 @@ class TestMainEntryPoint:
         """Test main() creates server and calls run()."""
         mock_mcp = Mock()
         mock_run = Mock()
-        mock_mcp._run = mock_run
+        mock_mcp.run = mock_run
         mock_create.return_value = mock_mcp
 
         from obsidian_mcp.server import main

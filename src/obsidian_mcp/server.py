@@ -135,14 +135,14 @@ def create_mcp_server(config: ObsidianConfig | None = None):
             raise ValueError(f"Unknown transport: {config.transport}")
 
     # Attach run function to mcp for CLI access
-    mcp._run = run
-    return mcp
+        mcp.run = run
+        return mcp
 
 
 def main():
     """Entry point for the vault-bridge CLI."""
-    _ = create_mcp_server()
-    _.run()
+    mcp = create_mcp_server()
+    mcp._run()
 
 
 if __name__ == "__main__":
