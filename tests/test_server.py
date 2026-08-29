@@ -92,11 +92,11 @@ class TestRunFunction:
 
     @patch("obsidian_mcp.server.FastMCP.run")
     def test_run_stdio(self, mock_run):
-        """Test stdio transport calls mcp.run()."""
+        """Test stdio transport calls FastMCP.run(mcp)."""
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
         mcp.run()
-        mock_run.assert_called_once()
+        mock_run.assert_called_once_with(mcp)
 
     @patch("obsidian_mcp.server.FastMCP.run_http_async")
     def test_run_sse(self, mock_run_http):
@@ -125,10 +125,10 @@ class TestMainEntryPoint:
 
     @patch("obsidian_mcp.server.create_mcp_server")
     def test_main_calls_create_and_run(self, mock_create):
-        """Test main() creates server and calls run()."""
+        """Test main() creates server and calls _run()."""
         mock_mcp = Mock()
         mock_run = Mock()
-        mock_mcp.run = mock_run
+        mock_mcp._run = mock_run
         mock_create.return_value = mock_mcp
 
         from obsidian_mcp.server import main
