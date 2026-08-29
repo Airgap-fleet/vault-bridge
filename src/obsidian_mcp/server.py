@@ -131,7 +131,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         logger.info("server.starting", name="Vault Bridge", transport=config.transport, host=config.host, port=config.port, path=config.path)
 
         if config.transport == "stdio":
-            mcp.run()
+            FastMCP.run(mcp)
         elif config.transport == "sse" or config.transport == "streamable-http":
             mcp.run_http_async()
         else:
@@ -139,14 +139,14 @@ def create_mcp_server(config: ObsidianConfig | None = None):
             raise ValueError(f"Unknown transport: {config.transport}")
 
     # Attach run function to mcp for CLI access
-    mcp.run = run
+    mcp._run = run
     return mcp
 
 
 def main():
     """Entry point for the vault-bridge CLI."""
     mcp = create_mcp_server()
-    mcp.run()
+    mcp._run()
 
 
 if __name__ == "__main__":
