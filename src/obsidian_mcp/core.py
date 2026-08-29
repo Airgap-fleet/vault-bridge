@@ -348,9 +348,10 @@ class ObsidianCore:
                 created = True
                 logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
             else:
-                content = path.read_text(encoding=self.config.default_encoding)
-                frontmatter, content = self._parse_frontmatter(content)
-                logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
+                            content = path.read_text(encoding=self.config.default_encoding)
+                            frontmatter_raw, content = self._parse_frontmatter(content)
+                            frontmatter: dict[str, str] = frontmatter_raw or {}
+                            logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
 
             return DailyNoteResponse(
                 path=str(path.relative_to(self._vault_root)),
