@@ -346,6 +346,7 @@ class ObsidianCore:
             content = self._format_frontmatter(initial_frontmatter)
             path.write_text(content, encoding=self.config.default_encoding)
             created = True
+            frontmatter: dict[str, str] = initial_frontmatter
             logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
         else:
             content = path.read_text(encoding=self.config.default_encoding)

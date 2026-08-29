@@ -57,10 +57,14 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         auth = APIKeyVerifier(config.api_key)
         logger.info("auth.enabled", transport=config.transport)
 
-    mcp = FastMCP(
-        "Vault Bridge",
-        auth=auth,
-    )
+    try:
+        mcp = FastMCP(
+            "Vault Bridge",
+            auth=auth,
+        )
+    except Exception as e:
+        logger.error("fastmcp.init_failed", error=type(e).__name__, message=str(e))
+        raise
 
     @mcp.tool()
     def read_note(request: ReadNoteRequest) -> ReadNoteResponse | ErrorResponse:
