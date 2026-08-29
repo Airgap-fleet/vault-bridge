@@ -1,6 +1,5 @@
 """Tests for ObsidianCore path resolution and security."""
 
-
 import pytest
 
 from obsidian_mcp.models import (
@@ -30,17 +29,17 @@ class TestPathResolution:
 
     def test_reject_absolute_path(self, core):
         """Test that absolute paths are rejected."""
-        with pytest.raises(ValueError, match="Absolute paths not allowed"):
+        with pytest.raises(ValueError, match="Path escapes vault root"):
             core._resolve_path("/etc/passwd")
 
     def test_reject_path_traversal(self, core):
-            """Test that path traversal is blocked."""
-            with pytest.raises(ValueError, match="Path escapes vault root"):
-                core._resolve_path("../note1.md")
+        """Test that path traversal is blocked."""
+        with pytest.raises(ValueError, match="Path escapes vault root"):
+            core._resolve_path("../note1.md")
 
     def test_reject_absolute_traversal(self, core):
         """Test that absolute path with traversal is blocked."""
-        with pytest.raises(ValueError, match="Absolute paths not allowed"):
+        with pytest.raises(ValueError, match="Path escapes vault root"):
             core._resolve_path("/tmp/../../etc/passwd")
 
 
