@@ -139,7 +139,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
             raise ValueError(f"Unknown transport: {config.transport}")
 
     # Attach run function to mcp for CLI access
-    mcp._run = run
+    mcp._run = run  # type: ignore[attr-defined]
     return mcp
 
 
