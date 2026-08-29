@@ -317,47 +317,48 @@ class ObsidianCore:
         )
 
     def get_daily_note(self, request: DailyNoteRequest) -> DailyNoteResponse:
-        """Get or create a daily note."""
-        logger.debug("get_daily_note.start", date=request.date, folder=request.folder, create_if_missing=request.create_if_missing)
-        if request.date:
-            try:
-                date = datetime.strptime(request.date, "%Y-%m-%d").replace(tzinfo=UTC)
-            except ValueError:
-                logger.warning("get_daily_note.invalid_date", date=request.date)
-                raise ValueError("Date must be in YYYY-MM-DD format")
-        else:
-            date = datetime.now(UTC)
+            """Get or create a daily note."""
+            logger.debug("get_daily_note.start", date=request.date, folder=request.folder, create_if_missing=request.create_if_missing)
+            if request.date:
+                try:
+                    date = datetime.strptime(request.date, "%Y-%m-%d").replace(tzinfo=UTC)
+                except ValueError:
+                    logger.warning("get_daily_note.invalid_date", date=request.date)
+                    raise ValueError("Date must be in YYYY-MM-DD format")
+            else:
+                date = datetime.now(UTC)
 
-        date_str = date.strftime("%Y-%m-%d")
-        folder = request.folder.rstrip("/")
-        path = self._resolve_path(f"{folder}/{date_str}.md")
+            date_str = date.strftime("%Y-%m-%d")
+            folder = request.folder.rstrip("/")
+            path = self._resolve_path(f"{folder}/{date_str}.md")
 
-        created = False
-        if not path.exists():
-            if not request.create_if_missing:
-                logger.warning("get_daily_note.not_found", path=str(path))
-                raise FileNotFoundError(f"Daily note not found: {path}")
-            path.parent.mkdir(parents=True, exist_ok=True)
-            content = ""
-            initial_frontmatter = {"date": date_str}
-            if request.template:
-                # TODO: load template
-                pass
-            content = self._format_frontmatter(initial_frontmatter)
-            path.write_text(content, encoding=self.config.default_encoding)
-            created = True
-            frontmatter: dict[str, str] = initial_frontmatter
-            logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
-        else:
-            content = path.read_text(encoding=self.config.default_encoding)
-            frontmatter_raw, content = self._parse_frontmatter(content)
-            frontmatter: dict[str, str] = frontmatter_raw or {}
-            logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
+            created = False
+            frontmatter: dict[str, str] = {}
+            if not path.exists():
+                if not request.create_if_missing:
+                    logger.warning("get_daily_note.not_found", path=str(path))
+                    raise FileNotFoundError(f"Daily note not found: {path}")
+                path.parent.mkdir(parents=True, exist_ok=True)
+                content = ""
+                initial_frontmatter = {"date": date_str}
+                if request.template:
+                    # TODO: load template
+                    pass
+                content = self._format_frontmatter(initial_frontmatter)
+                path.write_text(content, encoding=self.config.default_encoding)
+                created = True
+                frontmatter = initial_frontmatter
+                logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
+            else:
+                content = path.read_text(encoding=self.config.default_encoding)
+                frontmatter_raw, content = self._parse_frontmatter(content)
+                frontmatter = frontmatter_raw or {}
+                logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
 
-        return DailyNoteResponse(
-            path=str(path.relative_to(self._vault_root)),
-            content=content,
-            frontmatter=frontmatter,
-            date=date_str,
-            created=created,
-        )
+            return DailyNoteResponse(
+                path=str(path.relative_to(self._vault_root)),
+                content=content,
+                frontmatter=frontmatter,
+                date=date_str,
+                created=created,
+            )
