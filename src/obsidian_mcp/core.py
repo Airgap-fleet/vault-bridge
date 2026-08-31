@@ -45,7 +45,7 @@ class ObsidianCore:
         """Resolve a relative path to absolute within vault."""
         p = Path(path)
         if p.is_absolute():
-            raise ValueError("Absolute paths not allowed; use paths relative to vault root.")
+            raise ValueError("Path escapes vault root: use paths relative to vault root.")
         resolved = (self._vault_root / p).resolve()
         # Security: ensure path is within vault
         try:
@@ -58,13 +58,12 @@ class ObsidianCore:
         """Parse YAML frontmatter from note content."""
         if not content.startswith("---"):
             return None, content
+        parts = content.split("---", 2)
+        if len(parts) < 3:
+            return None, content
         try:
-            parts = content.split("---", 2)
-            if len(parts) < 3:
-                return None, content
             fm = yaml.safe_load(parts[1])
-            body = parts[2].lstrip("\n")
-            return fm if isinstance(fm, dict) else None, body
+            return fm if isinstance(fm, dict) else None, parts[2]
         except yaml.YAMLError:
             return None, content
 
@@ -317,48 +316,45 @@ class ObsidianCore:
         )
 
     def get_daily_note(self, request: DailyNoteRequest) -> DailyNoteResponse:
-            """Get or create a daily note."""
-            logger.debug("get_daily_note.start", date=request.date, folder=request.folder, create_if_missing=request.create_if_missing)
-            if request.date:
-                try:
-                    date = datetime.strptime(request.date, "%Y-%m-%d").replace(tzinfo=UTC)
-                except ValueError:
-                    logger.warning("get_daily_note.invalid_date", date=request.date)
-                    raise ValueError("Date must be in YYYY-MM-DD format")
-            else:
-                date = datetime.now(UTC)
+        """Get or create a daily note."""
+        logger.debug("get_daily_note.start", date=request.date, folder=request.folder, create_if_missing=request.create_if_missing)
+        if request.date:
+            try:
+                date = datetime.strptime(request.date, "%Y-%m-%d").replace(tzinfo=UTC)
+            except ValueError:
+                logger.warning("get_daily_note.invalid_date", date=request.date)
+                raise ValueError("Date must be in YYYY-MM-DD format")
+        else:
+            date = datetime.now(UTC)
 
-            date_str = date.strftime("%Y-%m-%d")
-            folder = request.folder.rstrip("/")
-            path = self._resolve_path(f"{folder}/{date_str}.md")
+        date_str = date.strftime("%Y-%m-%d")
+        folder = request.folder.rstrip("/")
+        path = self._resolve_path(f"{folder}/{date_str}.md")
 
-            created = False
-            frontmatter: dict[str, str] = {}
-            if not path.exists():
-                if not request.create_if_missing:
-                    logger.warning("get_daily_note.not_found", path=str(path))
-                    raise FileNotFoundError(f"Daily note not found: {path}")
-                path.parent.mkdir(parents=True, exist_ok=True)
-                content = ""
-                initial_frontmatter = {"date": date_str}
-                if request.template:
-                    # TODO: load template
-                    pass
-                content = self._format_frontmatter(initial_frontmatter)
-                path.write_text(content, encoding=self.config.default_encoding)
-                created = True
-                frontmatter = initial_frontmatter
-                logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
-            else:
-                content = path.read_text(encoding=self.config.default_encoding)
-                frontmatter_raw, content = self._parse_frontmatter(content)
-                frontmatter = frontmatter_raw or {}
-                logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
+        created = False
+        if not path.exists():
+            if not request.create_if_missing:
+                logger.warning("get_daily_note.not_found", path=str(path))
+                raise FileNotFoundError(f"Daily note not found: {path}")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            content = ""
+            initial_frontmatter: dict[str, Any] = {"date": date_str}
+            if request.template:
+                # TODO: load template
+                pass
+            content = self._format_frontmatter(initial_frontmatter)
+            path.write_text(content, encoding=self.config.default_encoding)
+            created = True
+            logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
+        else:
+            content = path.read_text(encoding=self.config.default_encoding)
+            initial_frontmatter, content = self._parse_frontmatter(content)
+            logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
 
-            return DailyNoteResponse(
-                path=str(path.relative_to(self._vault_root)),
-                content=content,
-                frontmatter=frontmatter,
-                date=date_str,
-                created=created,
-            )
+        return DailyNoteResponse(
+            path=str(path.relative_to(self._vault_root)),
+            content=content,
+            frontmatter=initial_frontmatter,
+            date=date_str,
+            created=created,
+        )
