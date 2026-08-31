@@ -55,18 +55,18 @@ class ObsidianCore:
         return resolved
 
     def _parse_frontmatter(self, content: str) -> tuple[dict[str, Any] | None, str]:
-            """Parse YAML frontmatter from note content."""
-            if not content.startswith("---"):
-                return None, content
-            parts = content.split("---", 2)
-            if len(parts) < 3:
-                return None, content
-            try:
-                fm = yaml.safe_load(parts[1])
-                body = parts[2].lstrip("\n")
-                return fm if isinstance(fm, dict) else None, body
-            except yaml.YAMLError:
-                return None, content
+        """Parse YAML frontmatter from note content."""
+        if not content.startswith("---"):
+            return None, content
+        parts = content.split("---", 2)
+        if len(parts) < 3:
+            return None, content
+        try:
+            fm = yaml.safe_load(parts[1])
+            body = parts[2].lstrip("\n")
+            return fm if isinstance(fm, dict) else None, body
+        except yaml.YAMLError:
+            return None, content
 
     def _format_frontmatter(self, fm: dict[str, Any]) -> str:
         """Format frontmatter as YAML."""
@@ -349,6 +349,7 @@ class ObsidianCore:
             logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
         else:
             content = path.read_text(encoding=self.config.default_encoding)
+            initial_frontmatter: dict[str, Any] | None
             initial_frontmatter, content = self._parse_frontmatter(content)
             logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
 
