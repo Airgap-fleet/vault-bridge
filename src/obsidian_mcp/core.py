@@ -333,6 +333,7 @@ class ObsidianCore:
         path = self._resolve_path(f"{folder}/{date_str}.md")
 
         created = False
+        existing_frontmatter: dict[str, Any] | None = None
         if not path.exists():
             if not request.create_if_missing:
                 logger.warning("get_daily_note.not_found", path=str(path))
@@ -346,17 +347,17 @@ class ObsidianCore:
             content = self._format_frontmatter(initial_frontmatter)
             path.write_text(content, encoding=self.config.default_encoding)
             created = True
+            existing_frontmatter = initial_frontmatter
             logger.info("get_daily_note.created", path=str(path.relative_to(self._vault_root)), date=date_str)
         else:
             content = path.read_text(encoding=self.config.default_encoding)
-            initial_frontmatter: dict[str, Any] | None
-            initial_frontmatter, content = self._parse_frontmatter(content)
+            existing_frontmatter, content = self._parse_frontmatter(content)
             logger.info("get_daily_note.existing", path=str(path.relative_to(self._vault_root)), date=date_str)
 
         return DailyNoteResponse(
             path=str(path.relative_to(self._vault_root)),
             content=content,
-            frontmatter=initial_frontmatter,
+            frontmatter=existing_frontmatter,
             date=date_str,
             created=created,
         )
