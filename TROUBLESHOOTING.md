@@ -493,11 +493,11 @@ uv sync
 ```bash
 # Add exclusions for:
 # - Python executable (python.exe)
-# - Project directory (C:\the force\03_Context\projects\afaaS\*)
+# - Project directory (C:\path\to\project\*)
 # - DXT files
 
 # PowerShell (Admin):
-Add-MpPreference -ExclusionPath "C:\the force\03_Context\projects\afaaS"
+Add-MpPreference -ExclusionPath "C:\path\to\project"
 Add-MpPreference -ExclusionProcess "python.exe"
 ```
 
