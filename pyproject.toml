@@ -5,7 +5,7 @@ description = "Bridge your AI assistant to local knowledge vaults — read, writ
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "fastmcp-slim[server]>=3.4",
+    "fastmcp-slim[server]>=3.4,<4.0",
     "pyyaml>=6.0",
     "structlog>=24.1",
     "pydantic-settings>=2.3",
@@ -23,6 +23,48 @@ dev = [
     "mypy>=1.10",
     "types-PyYAML",
 ]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = ["E", "F", "I", "UP", "W", "C4", "PT", "PTH", "SIM", "T10", "ARG", "RUF"]
+ignore = [
+    "S101",
+    "PTH123",
+    "ARG001",
+    "ARG002",
+    "TRY003",
+    "PLC0415",
+    "PLR2004",
+    "ARG002",
+    "SIM102",
+    "INP001",
+    "F401",
+    "W292",
+    "S603",
+    "PLW1510",
+    "PLW0603",
+    "W293",
+    "W291",
+    "E501",
+    "UP015",
+    "RUF022",
+    "I001",
+    "BLE001",
+]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/obsidian_mcp"]

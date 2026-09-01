@@ -239,27 +239,27 @@ class ObsidianCore:
         matches = []
 
         def compare(op: str, a: Any, b: Any) -> bool:
-            if op == "eq":
-                return a == b
-            elif op == "ne":
-                return a != b
-            elif op == "contains":
-                return str(b).lower() in str(a).lower()
-            elif op == "startswith":
-                return str(a).lower().startswith(str(b).lower())
-            elif op == "endswith":
-                return str(a).lower().endswith(str(b).lower())
-            elif op == "gt":
-                return a > b
-            elif op == "lt":
-                return a < b
-            elif op == "gte":
-                return a >= b
-            elif op == "lte":
-                return a <= b
-            elif op == "exists":
-                return a is not None
-            return False
+                    if op == "eq":
+                        return a == b  # type: ignore[no-any-return]
+                    elif op == "ne":
+                        return a != b  # type: ignore[no-any-return]
+                    elif op == "contains":
+                        return str(b).lower() in str(a).lower()
+                    elif op == "startswith":
+                        return str(a).lower().startswith(str(b).lower())
+                    elif op == "endswith":
+                        return str(a).lower().endswith(str(b).lower())
+                    elif op == "gt":
+                        return a > b  # type: ignore[no-any-return]
+                    elif op == "lt":
+                        return a < b  # type: ignore[no-any-return]
+                    elif op == "gte":
+                        return a >= b  # type: ignore[no-any-return]
+                    elif op == "lte":
+                        return a <= b  # type: ignore[no-any-return]
+                    elif op == "exists":
+                        return a is not None
+                    return False
 
         for f in base_path.rglob(glob_pat.replace("**/", "")):
             if not f.is_file():
