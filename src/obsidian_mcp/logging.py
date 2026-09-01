@@ -1,16 +1,17 @@
 """Structured logging configuration for Obsidian MCP."""
 
+import logging
 import sys
+from typing import cast
 
 import structlog
-from structlog.stdlib import LoggerFactory
+from structlog.stdlib import BoundLogger, LoggerFactory
 
 
 def configure_logging(level: str = "INFO", json_output: bool = True) -> None:
     """Configure structlog for structured JSON logging."""
 
     # Configure stdlib logging
-    import logging
     # Remove existing handlers to allow reconfiguration (important for tests)
     root_logger = logging.getLogger()
     for handler in root_logger.handlers[:]:
@@ -47,6 +48,6 @@ def configure_logging(level: str = "INFO", json_output: bool = True) -> None:
     )
 
 
-def get_logger(name: str) -> structlog.stdlib.BoundLogger:
+def get_logger(name: str) -> BoundLogger:
     """Get a structured logger instance."""
-    return structlog.get_logger(name)
+    return cast(BoundLogger, structlog.get_logger(name))

@@ -2,6 +2,8 @@
 Stateless protocol (2026-07-28): no global session state, explicit config per request.
 """
 
+from typing import Any
+
 from fastmcp import FastMCP
 from fastmcp.server.auth import AccessToken, TokenVerifier
 
@@ -28,7 +30,7 @@ from .models import (
 class APIKeyVerifier(TokenVerifier):
     """Simple API key verifier for MCP transport authentication."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str) -> None:
         self.api_key = api_key
         super().__init__()
 
@@ -43,7 +45,7 @@ def create_core(config: ObsidianConfig) -> ObsidianCore:
     return ObsidianCore(config)
 
 
-def create_mcp_server(config: ObsidianConfig | None = None):
+def create_mcp_server(config: ObsidianConfig | None = None) -> FastMCP:
     """Create and configure the FastMCP server."""
     config = config or ObsidianConfig()
 
@@ -72,7 +74,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.read_note(request)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error("read_note.error", path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
 
@@ -82,7 +84,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.write_note(request)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error("write_note.error", path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
 
@@ -92,7 +94,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.list_notes(request)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error("list_notes.error", path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
 
@@ -102,7 +104,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.search_notes(request)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error("search_notes.error", pattern=request.pattern, path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
 
@@ -112,7 +114,7 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.search_frontmatter(request)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error("search_frontmatter.error", key=request.key, operator=request.operator, path=request.path, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
 
@@ -122,18 +124,19 @@ def create_mcp_server(config: ObsidianConfig | None = None):
         try:
             core = create_core(config)
             return core.get_daily_note(request)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error("get_daily_note.error", date=request.date, folder=request.folder, error=type(e).__name__, message=str(e))
             return ErrorResponse(error=type(e).__name__, message=str(e))
 
-    def run():
+    def run() -> None:
         """Entry point for the vault-bridge CLI."""
         logger.info("server.starting", name="Vault Bridge", transport=config.transport, host=config.host, port=config.port, path=config.path)
 
         if config.transport == "stdio":
             FastMCP.run(mcp)
         elif config.transport == "sse" or config.transport == "streamable-http":
-            mcp.run_http_async()
+            import asyncio
+            asyncio.run(mcp.run_http_async())
         else:
             logger.error("server.invalid_transport", transport=config.transport)
             raise ValueError(f"Unknown transport: {config.transport}")
@@ -143,9 +146,9 @@ def create_mcp_server(config: ObsidianConfig | None = None):
     return mcp
 
 
-def main():
+def main() -> None:
     """Entry point for the vault-bridge CLI."""
-    mcp = create_mcp_server()
+    mcp: Any = create_mcp_server()
     mcp._run()
 
 

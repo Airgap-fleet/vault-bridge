@@ -94,11 +94,11 @@ class TestRunFunction:
         """Test that stdio transport uses FastMCP.run."""
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        
+
         # Verify the _run attribute exists and is callable
         assert hasattr(mcp, "_run")
         assert callable(mcp._run)
-        
+
         # For stdio, run() should delegate to FastMCP.run
         # We can't easily test the internal call without complex mocking
         # Just verify the function exists and is callable
@@ -107,7 +107,7 @@ class TestRunFunction:
         """Test that SSE transport uses run_http_async."""
         config = ObsidianConfig(transport="sse")
         mcp = create_mcp_server(config)
-        
+
         # Verify the _run attribute exists
         assert hasattr(mcp, "_run")
         assert callable(mcp._run)
@@ -116,7 +116,7 @@ class TestRunFunction:
         """Test that streamable-http transport uses run_http_async."""
         config = ObsidianConfig(transport="streamable-http")
         mcp = create_mcp_server(config)
-        
+
         # Verify the _run attribute exists
         assert hasattr(mcp, "_run")
         assert callable(mcp._run)
@@ -154,7 +154,7 @@ class TestInMemoryToolCalls:
         from fastmcp import Client
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        
+
         async with Client(mcp) as client:
             # This tests the tool registration and basic call structure
             # without needing a real vault
@@ -168,7 +168,7 @@ class TestInMemoryToolCalls:
         from fastmcp import Client
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        
+
         async with Client(mcp) as client:
             tools = await client.list_tools()
             tool_names = [t.name for t in tools]
@@ -180,7 +180,7 @@ class TestInMemoryToolCalls:
         from fastmcp import Client
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        
+
         async with Client(mcp) as client:
             tools = await client.list_tools()
             tool_names = [t.name for t in tools]
@@ -192,7 +192,7 @@ class TestInMemoryToolCalls:
         from fastmcp import Client
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        
+
         async with Client(mcp) as client:
             tools = await client.list_tools()
             tool_names = [t.name for t in tools]
@@ -204,7 +204,7 @@ class TestInMemoryToolCalls:
         from fastmcp import Client
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        
+
         async with Client(mcp) as client:
             tools = await client.list_tools()
             tool_names = [t.name for t in tools]
@@ -216,7 +216,7 @@ class TestInMemoryToolCalls:
         from fastmcp import Client
         config = ObsidianConfig(transport="stdio")
         mcp = create_mcp_server(config)
-        
+
         async with Client(mcp) as client:
             tools = await client.list_tools()
             tool_names = [t.name for t in tools]

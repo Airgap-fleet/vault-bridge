@@ -41,7 +41,7 @@ class VaultIndexer:
         with self._lock, sqlite3.connect(self.db_path) as conn:
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA synchronous=NORMAL")
-            
+
             # Main notes table
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS notes (
@@ -54,7 +54,7 @@ class VaultIndexer:
                     vault TEXT DEFAULT 'default'  -- NEW: multi-vault
                 )
             """)
-            
+
             # FTS5 virtual table for content search
             conn.execute("""
                 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
@@ -67,7 +67,7 @@ class VaultIndexer:
                     tokenize='porter unicode61'
                 )
             """)
-            
+
             # Frontmatter property index for fast key/value lookups
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS frontmatter_props (
@@ -86,7 +86,7 @@ class VaultIndexer:
                 CREATE INDEX IF NOT EXISTS idx_frontmatter_key_value 
                 ON frontmatter_props(key, value)
             """)
-            
+
             # Wikilinks table for graph/backlinks
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS wikilinks (
@@ -107,7 +107,7 @@ class VaultIndexer:
                 CREATE INDEX IF NOT EXISTS idx_wikilinks_source 
                 ON wikilinks(source_path)
             """)
-            
+
             # Vault metadata table (multi-vault)
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS vaults (
@@ -118,7 +118,7 @@ class VaultIndexer:
                     note_count INTEGER DEFAULT 0
                 )
             """)
-            
+
             # Index metadata
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS index_meta (
@@ -126,7 +126,7 @@ class VaultIndexer:
                     value TEXT
                 )
             """)
-            
+
             conn.commit()
             logger.debug("index.db_initialized", path=str(self.db_path))
 
@@ -157,7 +157,7 @@ class VaultIndexer:
         mtime = self._get_file_mtime(abs_path)
         if mtime == 0:
             return
-        
+
         try:
             content = abs_path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -165,37 +165,37 @@ class VaultIndexer:
             return
         except OSError:
             return
-        
+
         frontmatter, body = self._parse_frontmatter(content)
         fm_json = None
         fm_keys = ""
         fm_values = ""
-        
+
         if frontmatter:
             import json
             fm_json = json.dumps(frontmatter)
             fm_keys = " ".join(frontmatter.keys())
             fm_values = " ".join(str(v) for v in frontmatter.values())
-            
+
             # Index frontmatter properties
             for k, v in frontmatter.items():
                 conn.execute(
                     "INSERT OR REPLACE INTO frontmatter_props (path, key, value, vault) VALUES (?, ?, ?, ?)",
                     (str(rel_path), k, str(v), vault_name)
                 )
-        
+
         # Upsert note
         conn.execute("""
             INSERT OR REPLACE INTO notes (path, name, size, modified, indexed_at, frontmatter, vault)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (str(rel_path), rel_path.name, abs_path.stat().st_size, mtime, time.time(), fm_json, vault_name))
-        
+
         # Upsert FTS5 entry
         conn.execute("""
             INSERT OR REPLACE INTO notes_fts (path, name, content, frontmatter_keys, frontmatter_values, vault)
             VALUES (?, ?, ?, ?, ?, ?)
         """, (str(rel_path), rel_path.name, body, fm_keys, fm_values, vault_name))
-        
+
         # Index wikilinks
         self.index_wikilinks(conn, rel_path, content, vault_name)
 
@@ -211,19 +211,19 @@ class VaultIndexer:
         if self._indexing and not force:
             logger.warning("index.already_running")
             return {"indexed": 0, "removed": 0, "errors": 0, "skipped": 0}
-        
+
         self._indexing = True
         stats = {"indexed": 0, "removed": 0, "errors": 0, "skipped": 0}
         start_time = time.time()
-        
+
         try:
             with self._lock, sqlite3.connect(self.db_path) as conn:
                 conn.execute("PRAGMA journal_mode=WAL")
-                
+
                 # Get current indexed files for this vault
                 cursor = conn.execute("SELECT path, modified FROM notes WHERE vault = ?", (vault_name,))
                 indexed = {row[0]: row[1] for row in cursor.fetchall()}
-                
+
                 # Walk vault
                 current_files = {}
                 for abs_path in self.vault_root.rglob("*.md"):
@@ -237,13 +237,13 @@ class VaultIndexer:
                     if any(part.startswith(".") for part in rel.parts):
                         continue
                     current_files[str(rel)] = self._get_file_mtime(abs_path)
-                
+
                 # Index new/changed files
                 for rel_str, mtime in current_files.items():
                     rel_path = Path(rel_str)
                     abs_path = self.vault_root / rel_path
                     old_mtime = indexed.get(rel_str)
-                    
+
                     if force or old_mtime != mtime:
                         try:
                             self._index_single_file(conn, rel_path, abs_path, vault_name)
@@ -253,15 +253,15 @@ class VaultIndexer:
                             stats["errors"] += 1
                     else:
                         stats["skipped"] += 1
-                    
+
                     if progress_callback and stats["indexed"] % 50 == 0:
                         progress_callback(stats["indexed"])
-                
+
                 # Remove deleted files
                 for rel_str in set(indexed) - set(current_files):
                     self._remove_from_index(conn, Path(rel_str), vault_name)
                     stats["removed"] += 1
-                
+
                 # Update metadata
                 conn.execute("""
                     INSERT OR REPLACE INTO index_meta (key, value) VALUES (?, ?)
@@ -269,18 +269,18 @@ class VaultIndexer:
                 conn.execute("""
                     INSERT OR REPLACE INTO index_meta (key, value) VALUES (?, ?)
                 """, ("indexed_count", str(len(current_files))))
-                
+
                 # Update vault metadata
                 conn.execute("""
                     INSERT OR REPLACE INTO vaults (name, path, is_active, indexed_at, note_count)
                     VALUES (?, ?, 1, ?, ?)
                 """, (vault_name, str(self.vault_root), time.time(), len(current_files)))
-                
+
                 conn.commit()
-                
+
         finally:
             self._indexing = False
-        
+
         elapsed = time.time() - start_time
         logger.info("index.complete", **stats, elapsed_ms=int(elapsed * 1000))
         return stats
@@ -293,7 +293,7 @@ class VaultIndexer:
         """Full-text search using FTS5 with BM25 ranking."""
         with self._lock, sqlite3.connect(self.db_path) as conn:
             conn.execute("PRAGMA journal_mode=WAL")
-            
+
             # Build FTS5 query with BM25 ranking
             sql = """
                 SELECT n.path, n.name, n.size, n.modified, n.frontmatter,
@@ -304,14 +304,14 @@ class VaultIndexer:
                 WHERE notes_fts MATCH ? AND notes_fts.vault = ?
             """
             params = [query, vault_name]
-            
+
             if path_filter:
                 sql += " AND n.path LIKE ?"
                 params.append(f"{path_filter}%")
-            
+
             sql += " ORDER BY rank LIMIT ?"
             params.append(str(limit))
-            
+
             cursor = conn.execute(sql, params)
             results = []
             for row in cursor.fetchall():
@@ -328,12 +328,12 @@ class VaultIndexer:
                 })
             return results
 
-    def search_frontmatter(self, key: str, operator: str, value: str | None, 
+    def search_frontmatter(self, key: str, operator: str, value: str | None,
                            limit: int = 100, path_filter: str | None = None, vault_name: str = "Vault") -> list[dict[str, Any]]:
         """Fast frontmatter property search using indexed properties."""
         with self._lock, sqlite3.connect(self.db_path) as conn:
             conn.execute("PRAGMA journal_mode=WAL")
-            
+
             if operator == "exists":
                 sql = """
                     SELECT n.path, n.name, n.size, n.modified, n.frontmatter
@@ -350,7 +350,7 @@ class VaultIndexer:
                     WHERE fp.key = ? AND fp.vault = ?
                 """
                 params = [key, vault_name]
-                
+
                 if operator == "eq":
                     sql += " AND fp.value = ?"
                     params.append(value or "")
@@ -370,14 +370,14 @@ class VaultIndexer:
                     # Numeric comparison - cast
                     sql += f" AND CAST(fp.value AS REAL) {operator} ?"
                     params.append(value or "0")
-            
+
             if path_filter:
                 sql += " AND n.path LIKE ?"
                 params.append(f"{path_filter}%")
-            
+
             sql += " LIMIT ?"
             params.append(str(limit))
-            
+
             cursor = conn.execute(sql, params)
             results = []
             for row in cursor.fetchall():
@@ -397,18 +397,18 @@ class VaultIndexer:
         with self._lock, sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute("SELECT COUNT(*) FROM notes WHERE vault = ?", (vault_name,))
             total_notes = cursor.fetchone()[0]
-            
+
             cursor = conn.execute("SELECT value FROM index_meta WHERE key = 'last_full_index'")
             row = cursor.fetchone()
             last_index = float(row[0]) if row else 0.0
-            
+
             cursor = conn.execute("SELECT value FROM index_meta WHERE key = 'indexed_count'")
             row = cursor.fetchone()
             indexed_count = int(row[0]) if row else 0
-            
+
             # DB size
             db_size = self.db_path.stat().st_size if self.db_path.exists() else 0
-            
+
             return {
                 "total_notes": total_notes,
                 "indexed_count": indexed_count,
@@ -432,7 +432,7 @@ class VaultIndexer:
         return conn
 
     # ===== NEW: Wikilink / Backlink Extraction =====
-    
+
     def extract_wikilinks(self, content: str) -> list[dict[str, Any]]:
         """Extract [[wikilinks]] from content. Returns list of {target, alias, line, context}."""
         links = []
@@ -454,7 +454,7 @@ class VaultIndexer:
                     "context": context,
                 })
         return links
-    
+
     def index_wikilinks(self, conn: sqlite3.Connection, rel_path: Path, content: str, vault_name: str = "Vault") -> None:
         """Index wikilinks for a file."""
         links = self.extract_wikilinks(content)
@@ -491,7 +491,7 @@ class VaultIndexer:
                 SELECT DISTINCT target as path FROM wikilinks WHERE vault = ?
             """, (vault_name, vault_name))
             all_nodes = [r[0] for r in cursor.fetchall()]
-            
+
             # Filter by center if provided
             if center:
                 # BFS from center
@@ -523,14 +523,14 @@ class VaultIndexer:
                     SELECT source_path, target FROM wikilinks WHERE vault = ? LIMIT ?
                 """, (vault_name, limit))
                 edges = [{"source": r[0], "target": r[1], "type": "wikilink"} for r in cursor.fetchall()]
-            
+
             return {
                 "nodes": [{"id": n, "label": Path(n).stem} for n in nodes],
                 "edges": edges,
             }
 
     # ===== NEW: Multi-vault management =====
-    
+
     def add_vault(self, name: str, path: Path) -> None:
         """Add a vault to multi-vault configuration."""
         with self._lock, sqlite3.connect(self.db_path) as conn:
@@ -539,7 +539,7 @@ class VaultIndexer:
                 VALUES (?, ?, 1, 0, 0)
             """, (name, str(path)))
             conn.commit()
-    
+
     def remove_vault(self, name: str) -> None:
         """Remove a vault and all its indexed data."""
         with self._lock, sqlite3.connect(self.db_path) as conn:
@@ -549,7 +549,7 @@ class VaultIndexer:
             conn.execute("DELETE FROM wikilinks WHERE vault = ?", (name,))
             conn.execute("DELETE FROM vaults WHERE name = ?", (name,))
             conn.commit()
-    
+
     def list_vaults(self) -> list[dict[str, Any]]:
         """List all configured vaults."""
         with self._lock, sqlite3.connect(self.db_path) as conn:
@@ -558,7 +558,7 @@ class VaultIndexer:
                 "name": r[0], "path": r[1], "is_active": bool(r[2]),
                 "indexed_at": r[3], "note_count": r[4]
             } for r in cursor.fetchall()]
-    
+
     def set_vault_active(self, name: str, active: bool) -> None:
         """Set vault active/inactive status."""
         with self._lock, sqlite3.connect(self.db_path) as conn:
