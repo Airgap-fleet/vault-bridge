@@ -1,0 +1,46 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.airgap-fleet/vault-bridge",
+  "title": "vault-bridge",
+  "description": "Local-first Obsidian vault MCP bridge with read/write/search, frontmatter queries, daily notes with templates, and stateless protocol. Zero data egress, air-gapped ready.",
+  "repository": {
+    "url": "https://github.com/Airgap-fleet/vault-bridge",
+    "source": "github",
+    "id": "airgap-fleet-vault-bridge"
+  },
+  "version": "1.0.4",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "vault-bridge",
+      "version": "1.0.4",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "VAULT_BRIDGE_VAULT_PATH",
+          "description": "Path to your Obsidian vault (absolute path)",
+          "required": true
+        },
+        {
+          "name": "VAULT_BRIDGE_MAX_FILE_SIZE",
+          "description": "Maximum file size for read/write operations (bytes)",
+          "required": false,
+          "default": "10485760"
+        },
+        {
+          "name": "VAULT_BRIDGE_LOG_LEVEL",
+          "description": "Log level",
+          "required": false,
+          "default": "INFO",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR"]
+        }
+      ]
+    }
+  ],
+  "keywords": ["mcp", "obsidian", "vault", "local-first", "air-gapped", "stateless", "markdown"],
+  "license": "MIT"
+}
