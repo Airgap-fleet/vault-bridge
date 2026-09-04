@@ -14,35 +14,54 @@ Bridge your AI assistant to local knowledge vaults — read, write, search, and 
 ## Installation
 
 ```bash
-pip install vault-bridge
+pip install airgap-vault-bridge
 ```
 
 ## Usage
 
+### CLI (Direct)
 ```bash
 vault-bridge
 ```
 
-Or configure in your MCP client:
+### MCP Client Config (Claude Desktop, Cursor, VS Code)
 
+**Windows (requires full path to executable):**
 ```json
 {
   "mcpServers": {
     "vault": {
-      "command": "vault-bridge",
+      "command": "C:\Users\<user>\AppData\Local\hermes\hermes-agent\venv\Scripts\vault-bridge.exe",
       "env": {
-        "VAULT_BRIDGE_VAULT_PATH": "C:/path/to/vault"
+        "OBSIDIAN_MCP_VAULT_PATH": "C:/path/to/vault"
       }
     }
   }
 }
 ```
 
+**macOS/Linux (if on PATH):**
+```json
+{
+  "mcpServers": {
+    "vault": {
+      "command": "vault-bridge",
+      "env": {
+        "OBSIDIAN_MCP_VAULT_PATH": "/path/to/vault"
+      }
+    }
+  }
+}
+```
+
+### DXT (Claude Desktop 1-Click)
+Download `airgap-vault-bridge-1.0.2.dxt` from [Releases](https://github.com/airgap-fleet/vault-bridge/releases) → drag into Claude Desktop.
+
 ## Configuration
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
-| `VAULT_BRIDGE_VAULT_PATH` | Current directory | Path to vault root |
+| `OBSIDIAN_MCP_VAULT_PATH` | Current directory | Path to vault root |
 | `VAULT_BRIDGE_MAX_FILE_SIZE` | 10MB | Max file size for operations |
 | `VAULT_BRIDGE_DEFAULT_ENCODING` | utf-8 | Text encoding |
 | `VAULT_BRIDGE_INDEX_FRONTMATTER` | true | Parse YAML frontmatter |
@@ -102,3 +121,14 @@ Or configure in your MCP client:
   "create_if_missing": true
 }
 ```
+
+## Windows-Specific Notes
+
+- The executable is installed to `C:\Users\<user>\AppData\Local\hermes\hermes-agent\venv\Scripts\vault-bridge.exe` when using Hermes
+- **Always use the full `.exe` path in MCP client configs on Windows** — bare commands like `vault-bridge` will fail with `ENOENT` because the venv Scripts folder is not on system PATH
+- Use forward slashes in environment variable values (`C:/path/to/vault`) — they work fine in JSON
+- Escape backslashes in JSON command paths (`C:\Users\...`)
+
+## License
+
+MIT
