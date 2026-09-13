@@ -170,12 +170,14 @@ if (-not (Test-Path $pythonExe)) { Fail-Loud "python.exe missing in venv: $pytho
 
 Push-Location $SrcMirror
 try {
+    # uv sync --frozen may report success without wiring this external venv.
+    # Always install the project editable into $pythonExe so Scripts\vault-bridge.exe exists.
     & uv sync --frozen --python $pythonExe
     if ($LASTEXITCODE -ne 0) {
-        Write-Step "uv sync --frozen failed; trying uv pip install -e ." -Level WARN
-        & uv pip install --python $pythonExe -e .
-        if ($LASTEXITCODE -ne 0) { throw "uv pip install -e . failed with exit $LASTEXITCODE" }
+        Write-Step "uv sync --frozen exited $LASTEXITCODE (continuing with pip install -e .)" -Level WARN
     }
+    & uv pip install --python $pythonExe -e .
+    if ($LASTEXITCODE -ne 0) { throw "uv pip install -e . failed with exit $LASTEXITCODE" }
 } catch {
     Pop-Location
     Fail-Loud "Dependency install failed: $($_.Exception.Message)"
