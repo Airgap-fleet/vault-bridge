@@ -9,31 +9,20 @@ from structlog.stdlib import BoundLogger, LoggerFactory
 
 
 def configure_logging(level: str = "INFO", json_output: bool = True) -> None:
-    """Configure structlog for structured JSON logging to stderr only."""
+    """Configure structlog for structured JSON logging."""
 
+    # Configure stdlib logging
     # Remove existing handlers to allow reconfiguration (important for tests)
     root_logger = logging.getLogger()
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
 
-    # CRITICAL FIX: Use stderr, NOT stdout. MCP protocol reserves stdout for JSON-RPC messages only.
-    # Logging to stdout corrupts the handshake and breaks client parsing.
-    handler = logging.StreamHandler(sys.stderr)
-    
-    if json_output:
-        formatter = logging.Formatter(fmt="%(message)s")
-    else:
-        formatter = logging.Formatter(
-            fmt="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S"
-        )
-    
-    handler.setFormatter(formatter)
-    root_logger.addHandler(handler)
-    root_logger.setLevel(getattr(logging, level.upper()))
-
-    # Add NullHandler to prevent "No handlers could be found" warnings from library code
-    logging.getLogger().addHandler(logging.NullHandler())
+    logging.basicConfig(
+        format="%(message)s",
+        stream=sys.stdout,
+        level=getattr(logging, level.upper()),
+        force=True,  # Python 3.8+: force reconfiguration
+    )
 
     # Configure structlog processors
     processors: list[structlog.types.Processor] = [
