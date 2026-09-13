@@ -1,0 +1,7 @@
+﻿product=vault-bridge
+version=1.0.4
+git_commit=20b914600ad6c13d368ddfa04b5a50a174aacfb8
+git_commit_short=20b9146
+git_describe=v1.0.4-1-g20b9146
+built_utc=2026-09-06T16:34:24.3574496Z
+signing=UNSIGNED INTERNAL
