@@ -57,3 +57,13 @@ logs/
 
 # Coverage
 htmlcov/
+# Nested vault / SoT folders must never ship in product trees
+00_Master/
+01_Obi-Wan/
+01_Obi-Wan_*/
+02_Sub-Agents/
+03_Context/
+04_Daily_Logs/
+Anakin/
+Chat Logs/
+Chat_Logs/

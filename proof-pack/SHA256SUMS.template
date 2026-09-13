@@ -1,0 +1,13 @@
+﻿# SHA256SUMS template
+#
+# Run: powershell -ExecutionPolicy Bypass -File .\proof-pack\Compute-Hashes.ps1
+# Then publish the generated proof-pack\SHA256SUMS with the release bundle.
+#
+# Verify on a buyer machine:
+#   Get-FileHash -Algorithm SHA256 .\installer\Install-VaultBridge.ps1
+#
+# PLACEHOLDER — replace with real hashes from Compute-Hashes.ps1 before distribution.
+# <SHA256>  installer/Install-VaultBridge.ps1
+# <SHA256>  scripts/self_test.ps1
+# <SHA256>  scripts/self_test.py
+# <SHA256>  uv.lock

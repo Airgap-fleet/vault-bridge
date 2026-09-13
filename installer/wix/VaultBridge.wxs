@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Vault Bridge MSI scaffold — UNSIGNED INTERNAL until Authenticode is available.
+  This is a placeholder product definition for when WiX Build Tools are installed.
+  The supported install path today is installer\Install-VaultBridge.ps1.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*"
+           Name="Vault Bridge (Airgap Fleet)"
+           Language="1033"
+           Version="1.0.4.0"
+           Manufacturer="Airgap Fleet"
+           UpgradeCode="A1B2C3D4-E5F6-4789-ABCD-EF0123456789">
+    <Package InstallerVersion="500"
+             Compressed="yes"
+             InstallScope="perUser"
+             Comments="UNSIGNED INTERNAL scaffold — do not distribute to prospects without Authenticode." />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Vault Bridge is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <Feature Id="ProductFeature" Title="Vault Bridge" Level="1">
+      <ComponentRef Id="cmpReadme" />
+    </Feature>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="AirgapFleetDir" Name="AirgapFleet">
+          <Directory Id="INSTALLFOLDER" Name="vault-bridge">
+            <Component Id="cmpReadme" Guid="B2C3D4E5-F6A7-4890-BCDE-F01234567890">
+              <File Id="filInstallerReadme" Source="!(wix.InstallerDir)README.md" KeyPath="yes" />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+  </Product>
+</Wix>
